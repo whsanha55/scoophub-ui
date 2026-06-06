@@ -13,7 +13,9 @@ import { StockReportCard } from "@/domains/stock/components/stock-report-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
-import { Newspaper, TrendingUp, Cloud } from "lucide-react";
+import { Newspaper, TrendingUp, Cloud, Flame } from "lucide-react";
+import { useGitHubTrending, useGitHubTrendingCrawl } from "@/domains/github/hooks/use-github-trending";
+import { GitHubTrendingCard } from "@/domains/github/components/github-trending-card";
 import type { NewsArticle } from "@/domains/news/types";
 
 export default function DashboardPage() {
@@ -23,6 +25,8 @@ export default function DashboardPage() {
   const { triggerCrawl: triggerNewsCrawl, loading: newsCrawlLoading } = useNewsCrawl();
   const { reports, fetchReports } = useAllStockReports();
   const { triggerAnalyze, loading: stockAnalyzeLoading } = useStockAnalyze();
+  const { repos, fetchTrending } = useGitHubTrending();
+  const { triggerCrawl: triggerGitHubCrawl, loading: githubCrawlLoading } = useGitHubTrendingCrawl();
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
   const [weatherExpanded, setWeatherExpanded] = useState(false);
 
@@ -30,7 +34,8 @@ export default function DashboardPage() {
     fetchWeather();
     fetchNews({ limit: 5 });
     fetchReports(true);
-  }, [fetchWeather, fetchNews, fetchReports]);
+    fetchTrending({ limit: 5 });
+  }, [fetchWeather, fetchNews, fetchReports, fetchTrending]);
 
   const handleWeatherCrawl = async () => {
     await triggerWeatherCrawl();
@@ -45,6 +50,11 @@ export default function DashboardPage() {
   const handleStockAnalyze = async () => {
     await triggerAnalyze();
     await fetchReports(true);
+  };
+
+  const handleGitHubCrawl = async () => {
+    await triggerGitHubCrawl();
+    await fetchTrending({ limit: 5 });
   };
 
   return (
@@ -146,6 +156,38 @@ export default function DashboardPage() {
               ))
             : Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-36 rounded-xl" />
+              ))}
+        </div>
+      </section>
+
+      {/* GitHub Trending Summary */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Flame className="h-5 w-5" />
+            GitHub Trending
+          </h2>
+          <div className="flex gap-2">
+            <CrawlTriggerButton
+              onClick={handleGitHubCrawl}
+              loading={githubCrawlLoading}
+              label="트렌딩 수집"
+            />
+            <Link
+              href="/github"
+              className="inline-flex items-center rounded-md bg-secondary px-3 py-1.5 text-sm font-medium cursor-pointer transition-colors duration-200 hover:bg-secondary/80"
+            >
+              전체 보기
+            </Link>
+          </div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {repos && repos.length > 0
+            ? repos.slice(0, 5).map((repo) => (
+                <GitHubTrendingCard key={repo.id} repo={repo} />
+              ))
+            : Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-40 rounded-xl" />
               ))}
         </div>
       </section>
