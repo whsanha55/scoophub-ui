@@ -10,7 +10,7 @@ import { useLlmTest } from "../hooks/use-llm-test";
 export function LlmTestPanel() {
   const [message, setMessage] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
-  const { response, loading, error, testLlm } = useLlmTest();
+  const { response, model, loading, error, testLlm } = useLlmTest();
 
   const handleSubmit = async () => {
     const trimmed = message.trim();
@@ -56,7 +56,8 @@ export function LlmTestPanel() {
           <CardHeader>
             <CardTitle>응답 결과</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-2">
+            {model && <p className="text-sm text-muted-foreground">모델: {model}</p>}
             <p className="whitespace-pre-wrap">{response}</p>
           </CardContent>
         </Card>

@@ -6,6 +6,7 @@ import type { ApiResponse } from "@/shared/types";
 
 export function useLlmTest() {
   const [response, setResponse] = useState<string | null>(null);
+  const [model, setModel] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +23,8 @@ export function useLlmTest() {
       });
       const data: ApiResponse<LLMTestResponse> = await res.json();
       if (data.success && data.data) {
-        setResponse(data.data.response);
+        setResponse(data.data.content);
+        setModel(data.data.model);
       } else {
         setError(data.error?.message || "Failed to test LLM");
       }
@@ -33,5 +35,5 @@ export function useLlmTest() {
     }
   }, []);
 
-  return { response, loading, error, testLlm };
+  return { response, model, loading, error, testLlm };
 }

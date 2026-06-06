@@ -27,5 +27,6 @@ export interface LLMTestRequest {
 }
 
 export interface LLMTestResponse {
-  response: string;
+  model: string;
+  content: string;
 }
