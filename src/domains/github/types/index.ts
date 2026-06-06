@@ -4,8 +4,8 @@ export interface GitHubTrendingRepo {
   author: string;
   name: string;
   url: string;
-  description: string;
-  language: string;
+  description: string | null;
+  language: string | null;
   stars: number;
   forks: number;
   current_period_stars: number;

@@ -22,9 +22,14 @@ const periodLabel: Record<string, string> = {
 
 export function GitHubTrendingCard({ repo }: GitHubTrendingCardProps) {
   return (
+    <a
+      href={repo.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block"
+    >
     <Card
       className="cursor-pointer transition-all duration-200 hover:shadow-md"
-      onClick={() => window.open(repo.url, "_blank")}
     >
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-semibold">{repo.fullname}</CardTitle>
@@ -54,5 +59,6 @@ export function GitHubTrendingCard({ repo }: GitHubTrendingCardProps) {
         )}
       </CardContent>
     </Card>
+    </a>
   );
 }
