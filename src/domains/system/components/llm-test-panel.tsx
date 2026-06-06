@@ -20,7 +20,7 @@ export function LlmTestPanel() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">LLM 호출 테스트</h1>
+      <h2 className="text-2xl font-bold">LLM 호출 테스트</h2>
 
       <Card>
         <CardContent className="space-y-4 pt-6">
