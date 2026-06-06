@@ -40,7 +40,7 @@ export function NewsFilters({
       ))}
 
       <span className="ml-4 text-sm font-medium text-muted-foreground">중요도:</span>
-      {[1, 5, 7].map((imp) => (
+      {[1, 3, 4].map((imp) => (
         <Button
           key={imp}
           variant={minImportance === imp ? "default" : "outline"}

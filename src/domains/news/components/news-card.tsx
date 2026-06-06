@@ -6,8 +6,8 @@ import { ExternalLink, Clock, Flame } from "lucide-react";
 import type { NewsArticle } from "../types";
 
 function importanceColor(importance: number): string {
-  if (importance >= 8) return "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20";
-  if (importance >= 5) return "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/20";
+  if (importance >= 4) return "bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20";
+  if (importance >= 2) return "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/20";
   return "bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/20";
 }
 
