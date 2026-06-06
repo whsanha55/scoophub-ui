@@ -62,6 +62,7 @@ export default function GitHubTrendingPage() {
         <Input
           className="sm:w-60"
           placeholder="언어 필터 (예: python)"
+          aria-label="언어 필터"
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
         />
