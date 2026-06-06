@@ -10,6 +10,18 @@ const nextConfig: NextConfig = {
         source: "/api/:path*",
         destination: `${API_URL}/api/:path*`,
       },
+      {
+        source: "/docs",
+        destination: `${API_URL}/docs`,
+      },
+      {
+        source: "/docs/:path*",
+        destination: `${API_URL}/docs/:path*`,
+      },
+      {
+        source: "/openapi.json",
+        destination: `${API_URL}/openapi.json`,
+      },
     ];
   },
 };

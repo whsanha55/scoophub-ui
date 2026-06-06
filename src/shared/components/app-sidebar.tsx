@@ -8,6 +8,7 @@ import {
   Cloud,
   Flame,
   LayoutDashboard,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,6 +32,7 @@ const navItems = [
   { title: "Stock", href: "/stock", icon: TrendingUp },
   { title: "GitHub", href: "/github", icon: Flame },
   { title: "Weather", href: "/weather", icon: Cloud },
+  { title: "Swagger Docs", href: "/docs", icon: BookOpen, external: true },
 ];
 
 function AppSidebar() {
@@ -52,18 +54,28 @@ function AppSidebar() {
           <SidebarMenu>
             {navItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  render={<Link href={item.href} />}
-                  isActive={
-                    item.href === "/"
-                      ? pathname === "/"
-                      : pathname.startsWith(item.href)
-                  }
-                  className="cursor-pointer transition-colors duration-200"
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
+                {item.external ? (
+                  <SidebarMenuButton
+                    render={<a href={item.href} target="_blank" rel="noopener noreferrer" />}
+                    className="cursor-pointer transition-colors duration-200"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                ) : (
+                  <SidebarMenuButton
+                    render={<Link href={item.href} />}
+                    isActive={
+                      item.href === "/"
+                        ? pathname === "/"
+                        : pathname.startsWith(item.href)
+                    }
+                    className="cursor-pointer transition-colors duration-200"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                )}
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
