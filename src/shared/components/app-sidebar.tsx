@@ -9,6 +9,7 @@ import {
   Flame,
   LayoutDashboard,
   BookOpen,
+  Wrench,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,6 +33,7 @@ const navItems = [
   { title: "Stock", href: "/stock", icon: TrendingUp },
   { title: "GitHub", href: "/github", icon: Flame },
   { title: "Weather", href: "/weather", icon: Cloud },
+  { title: "System", href: "/system", icon: Wrench },
   { title: "Swagger Docs", href: "/docs", icon: BookOpen, external: true },
 ];
 
