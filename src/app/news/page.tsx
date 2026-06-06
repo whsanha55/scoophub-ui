@@ -13,7 +13,8 @@ import type { NewsArticle } from "@/domains/news/types";
 const PAGE_SIZE = 20;
 
 function today(): string {
-  return new Date().toISOString().split("T")[0];
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export default function NewsPage() {
@@ -88,8 +89,8 @@ export default function NewsPage() {
         minImportance={minImportance}
         dateFrom={dateFrom}
         dateTo={dateTo}
-        onSelectCategory={setCategory}
-        onSelectImportance={setMinImportance}
+        onSelectCategory={(c) => { setCategory(c); setPage(1); }}
+        onSelectImportance={(imp) => { setMinImportance(imp); setPage(1); }}
         onSelectDateFrom={(d) => { setDateFrom(d); setPage(1); }}
         onSelectDateTo={(d) => { setDateTo(d); setPage(1); }}
       />
