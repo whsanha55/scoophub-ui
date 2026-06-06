@@ -5,25 +5,41 @@ import { useNews, useNewsArticle, useNewsCrawl } from "@/domains/news/hooks/use-
 import { NewsCard } from "@/domains/news/components/news-card";
 import { NewsDetail } from "@/domains/news/components/news-detail";
 import { NewsFilters } from "@/domains/news/components/news-filters";
+import { NewsPagination } from "@/domains/news/components/news-pagination";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { NewsArticle } from "@/domains/news/types";
 
+const PAGE_SIZE = 20;
+
+function today(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export default function NewsPage() {
-  const { articles, loading, fetchNews } = useNews();
+  const { articles, loading, total, fetchNews } = useNews();
   const { article: selectedArticle, fetchArticle } = useNewsArticle();
   const { loading: crawlLoading, triggerCrawl } = useNewsCrawl();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [category, setCategory] = useState<string | null>(null);
   const [minImportance, setMinImportance] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [dateFrom, setDateFrom] = useState(today);
+  const [dateTo, setDateTo] = useState(today);
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   const loadNews = useCallback(() => {
     fetchNews({
+      from: `${dateFrom}T00:00:00`,
+      to: `${dateTo}T23:59:59`,
       category: category ?? undefined,
       min_importance: minImportance ?? undefined,
-      limit: 50,
+      limit: PAGE_SIZE,
+      page,
     });
-  }, [fetchNews, category, minImportance]);
+  }, [fetchNews, dateFrom, dateTo, category, minImportance, page]);
 
   useEffect(() => {
     loadNews();
@@ -38,6 +54,11 @@ export default function NewsPage() {
   const handleCrawl = async () => {
     await triggerCrawl();
     await loadNews();
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (selectedId && selectedArticle) {
@@ -66,8 +87,12 @@ export default function NewsPage() {
       <NewsFilters
         selectedCategory={category}
         minImportance={minImportance}
-        onSelectCategory={setCategory}
-        onSelectImportance={setMinImportance}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onSelectCategory={(c) => { setCategory(c); setPage(1); }}
+        onSelectImportance={(imp) => { setMinImportance(imp); setPage(1); }}
+        onSelectDateFrom={(d) => { setDateFrom(d); setPage(1); }}
+        onSelectDateTo={(d) => { setDateTo(d); setPage(1); }}
       />
 
       {loading ? (
@@ -81,15 +106,22 @@ export default function NewsPage() {
           뉴스 기사가 없습니다
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {articles.map((article) => (
-            <NewsCard
-              key={article.id}
-              article={article}
-              onClick={(a: NewsArticle) => setSelectedId(a.id)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {articles.map((article) => (
+              <NewsCard
+                key={article.id}
+                article={article}
+                onClick={(a: NewsArticle) => setSelectedId(a.id)}
+              />
+            ))}
+          </div>
+          <NewsPagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
     </div>
   );
