@@ -60,6 +60,7 @@ export function HealthPanel() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-xl font-semibold">{count.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">총 레코드 수</p>
                 </CardContent>
               </Card>
             ))}
