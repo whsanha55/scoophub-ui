@@ -19,6 +19,7 @@ export interface NewsListParams {
   category?: string;
   min_importance?: number;
   limit?: number;
+  page?: number;
 }
 
 export interface CrawlingResult {

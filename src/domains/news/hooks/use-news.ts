@@ -8,6 +8,7 @@ export function useNews() {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
 
   const fetchNews = useCallback(async (params?: NewsListParams) => {
     setLoading(true);
@@ -20,11 +21,13 @@ export function useNews() {
       if (params?.category) sp.set("category", params.category);
       if (params?.min_importance) sp.set("min_importance", String(params.min_importance));
       if (params?.limit) sp.set("limit", String(params.limit));
+      if (params?.page) sp.set("page", String(params.page));
 
       const res = await fetch(`/api/news?${sp.toString()}`);
       const data: ApiResponse<NewsArticle[]> = await res.json();
       if (data.success && data.data) {
         setArticles(data.data);
+        setTotal(data.meta?.total ?? 0);
       } else {
         setError(data.error?.message || "Failed to fetch news");
       }
@@ -35,7 +38,7 @@ export function useNews() {
     }
   }, []);
 
-  return { articles, loading, error, fetchNews };
+  return { articles, loading, error, total, fetchNews };
 }
 
 export function useNewsArticle() {
