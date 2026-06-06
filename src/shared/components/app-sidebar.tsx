@@ -6,6 +6,7 @@ import {
   Newspaper,
   TrendingUp,
   Cloud,
+  Flame,
   LayoutDashboard,
 } from "lucide-react";
 import {
@@ -28,6 +29,7 @@ const navItems = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "News", href: "/news", icon: Newspaper },
   { title: "Stock", href: "/stock", icon: TrendingUp },
+  { title: "GitHub", href: "/github", icon: Flame },
   { title: "Weather", href: "/weather", icon: Cloud },
 ];
 
