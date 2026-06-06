@@ -58,7 +58,7 @@ export function StockReportCard({ report }: { report: StockReportSummarized }) {
             Score: <span className="text-foreground font-medium">{report.total_score.toFixed(1)}</span>
           </div>
           <div>
-            Confidence: <span className="text-foreground font-medium">{(report.confidence * 100).toFixed(0)}%</span>
+            Confidence: <span className="text-foreground font-medium">{report.confidence.toFixed(1)}%</span>
           </div>
           <div>
             Regime: <span className="text-foreground font-medium capitalize">{report.market_regime}</span>

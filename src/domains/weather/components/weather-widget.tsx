@@ -70,11 +70,11 @@ export function WeatherWidget({ weather, compact = false }: WeatherWidgetProps) 
           </div>
           <div className="flex items-center gap-2">
             <Wind className="h-4 w-4 text-gray-500" />
-            <span>{weather.wind_direction} {weather.wind_speed}m/s</span>
+            <span>{weather.wind_direction} {weather.wind_speed.toFixed(1)}m/s</span>
           </div>
           <div className="flex items-center gap-2">
             <Thermometer className="h-4 w-4 text-orange-500" />
-            <span>강수 {weather.precip_mm}mm</span>
+            <span>강수 {weather.precip_mm.toFixed(1)}mm</span>
           </div>
           <div className="flex items-center gap-2">
             <Droplets className="h-4 w-4 text-blue-400" />
@@ -82,19 +82,19 @@ export function WeatherWidget({ weather, compact = false }: WeatherWidgetProps) 
           </div>
           <div className="flex items-center gap-2">
             <Sun className="h-4 w-4 text-yellow-500" />
-            <span>UV {weather.uv_index} ({uvEmoji(weather.uv_grade)})</span>
+            <span>UV {weather.uv_index.toFixed(2)} ({uvEmoji(weather.uv_grade)})</span>
           </div>
           <div className="flex items-center gap-2">
             <Eye className="h-4 w-4 text-green-500" />
-            <span>오존 {weather.ozone}</span>
+            <span>오존 {weather.ozone.toFixed(2)}</span>
           </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           <Badge variant={pmGrade(weather.pm10_grade)}>
-            PM10 {weather.pm10} ({weather.pm10_grade})
+            PM10 {weather.pm10.toFixed(2)} ({weather.pm10_grade})
           </Badge>
           <Badge variant={pmGrade(weather.pm25_grade)}>
-            PM2.5 {weather.pm25} ({weather.pm25_grade})
+            PM2.5 {weather.pm25.toFixed(2)} ({weather.pm25_grade})
           </Badge>
         </div>
         {weather.weekly_forecast && weather.weekly_forecast.length > 0 && (

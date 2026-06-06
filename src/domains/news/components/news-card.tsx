@@ -35,17 +35,26 @@ export function NewsCard({
     >
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-base font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors duration-200">
-            {article.title}
-          </CardTitle>
           <a
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="shrink-0 cursor-pointer rounded-md p-1 text-muted-foreground transition-colors duration-200 hover:text-foreground hover:bg-accent"
+            className="min-w-0 cursor-pointer"
           >
-            <ExternalLink className="h-4 w-4" />
+            <CardTitle className="text-base font-semibold leading-snug line-clamp-2 transition-colors duration-200 hover:text-primary hover:underline decoration-primary underline-offset-2">
+              {article.title}
+            </CardTitle>
+          </a>
+          <a
+            href={article.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="shrink-0 cursor-pointer rounded-md p-1.5 text-muted-foreground transition-colors duration-200 hover:text-primary hover:bg-accent"
+            title="새창으로 보기"
+          >
+            <ExternalLink className="h-5 w-5" />
           </a>
         </div>
       </CardHeader>

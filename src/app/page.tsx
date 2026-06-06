@@ -5,14 +5,13 @@ import { useWeather } from "@/domains/weather/hooks/use-weather";
 import { useWeatherCrawl } from "@/domains/weather/hooks/use-weather";
 import { useNews } from "@/domains/news/hooks/use-news";
 import { useNewsCrawl } from "@/domains/news/hooks/use-news";
-import { useAllStockReports } from "@/domains/stock/hooks/use-stock";
-import { useStockAnalyze } from "@/domains/stock/hooks/use-stock";
+import { useAllStockReports, useStockAnalyze } from "@/domains/stock/hooks/use-stock";
 import { WeatherWidget } from "@/domains/weather/components/weather-widget";
 import { NewsCard } from "@/domains/news/components/news-card";
+import { NewsDetail } from "@/domains/news/components/news-detail";
 import { StockReportCard } from "@/domains/stock/components/stock-report-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Newspaper, TrendingUp, Cloud } from "lucide-react";
 import type { NewsArticle } from "@/domains/news/types";
@@ -25,6 +24,7 @@ export default function DashboardPage() {
   const { reports, fetchReports } = useAllStockReports();
   const { triggerAnalyze, loading: stockAnalyzeLoading } = useStockAnalyze();
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
+  const [weatherExpanded, setWeatherExpanded] = useState(false);
 
   useEffect(() => {
     fetchWeather();
@@ -65,7 +65,12 @@ export default function DashboardPage() {
           />
         </div>
         {weather ? (
-          <WeatherWidget weather={weather} compact />
+          <div
+            className="cursor-pointer"
+            onClick={() => setWeatherExpanded(!weatherExpanded)}
+          >
+            <WeatherWidget weather={weather} compact={!weatherExpanded} />
+          </div>
         ) : (
           <Skeleton className="h-24 w-full rounded-xl" />
         )}
@@ -131,7 +136,13 @@ export default function DashboardPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {reports.length > 0
             ? reports.slice(0, 8).map((report) => (
-                <StockReportCard key={report.ticker} report={report} />
+                <Link
+                  key={report.ticker}
+                  href={`/stock/${report.ticker}`}
+                  className="block"
+                >
+                  <StockReportCard report={report} />
+                </Link>
               ))
             : Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-36 rounded-xl" />
@@ -139,26 +150,12 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Selected Article Detail (inline) */}
+      {/* Selected News Detail (inline) */}
       {selectedArticle && (
-        <Card className="mt-4">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>{selectedArticle.title}</CardTitle>
-              <button
-                onClick={() => setSelectedArticle(null)}
-                className="cursor-pointer text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
-              >
-                닫기
-              </button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-              {selectedArticle.summary}
-            </p>
-          </CardContent>
-        </Card>
+        <NewsDetail
+          article={selectedArticle}
+          onBack={() => setSelectedArticle(null)}
+        />
       )}
     </div>
   );

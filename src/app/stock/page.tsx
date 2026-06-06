@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   useAllStockReports,
   useWatchlist,
@@ -92,6 +93,7 @@ export default function StockPage() {
             onAdd={addItem}
             onDelete={deleteItem}
             onUpdate={updateItem}
+            onTickerClick={handleTickerClick}
           />
         </div>
 
@@ -110,13 +112,13 @@ export default function StockPage() {
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {reports.map((report) => (
-                <div
+                <Link
                   key={report.ticker}
-                  onClick={() => handleTickerClick(report.ticker)}
-                  className="cursor-pointer"
+                  href={`/stock/${report.ticker}`}
+                  className="block"
                 >
                   <StockReportCard report={report} />
-                </div>
+                </Link>
               ))}
             </div>
           )}

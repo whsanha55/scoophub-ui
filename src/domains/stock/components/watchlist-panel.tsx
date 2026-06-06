@@ -25,9 +25,10 @@ interface WatchlistPanelProps {
   onAdd: (input: WatchlistCreateInput) => Promise<WatchlistItem | null>;
   onDelete: (id: string) => Promise<boolean>;
   onUpdate: (id: string, input: { memo?: string; is_active?: boolean }) => Promise<WatchlistItem | null>;
+  onTickerClick?: (ticker: string) => void;
 }
 
-export function WatchlistPanel({ items, onAdd, onDelete, onUpdate }: WatchlistPanelProps) {
+export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick }: WatchlistPanelProps) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<WatchlistCreateInput>({
     ticker: "",
@@ -119,7 +120,12 @@ export function WatchlistPanel({ items, onAdd, onDelete, onUpdate }: WatchlistPa
               <div className="flex items-center gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold">{item.ticker}</span>
+                    <span
+                      className={`font-semibold ${onTickerClick ? "cursor-pointer hover:text-primary transition-colors duration-200" : ""}`}
+                      onClick={onTickerClick ? (e) => { e.stopPropagation(); onTickerClick(item.ticker); } : undefined}
+                    >
+                      {item.ticker}
+                    </span>
                     <Badge variant="outline" className="text-xs">
                       {item.exchange}
                     </Badge>

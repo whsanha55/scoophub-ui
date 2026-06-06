@@ -55,9 +55,9 @@ export function NewsDetail({
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto flex items-center gap-1 cursor-pointer text-primary transition-colors duration-200 hover:underline"
+            className="ml-auto inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium cursor-pointer transition-colors duration-200 hover:bg-accent hover:text-accent-foreground"
           >
-            원문 보기 <ExternalLink className="h-3.5 w-3.5" />
+            원문 보기 <ExternalLink className="h-4 w-4" />
           </a>
         </div>
       </CardHeader>

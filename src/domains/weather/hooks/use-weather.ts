@@ -16,7 +16,11 @@ export function useWeather() {
       const res = await fetch(`/api/weather?location=${encodeURIComponent(location)}`);
       const data: ApiResponse<WeatherData> = await res.json();
       if (data.success && data.data) {
-        setWeather(data.data);
+        const d = data.data as WeatherData & { weekly_forecast?: string | DailyForecast[] };
+        if (typeof d.weekly_forecast === "string") {
+          try { d.weekly_forecast = JSON.parse(d.weekly_forecast); } catch { d.weekly_forecast = []; }
+        }
+        setWeather(d as WeatherData);
       } else {
         setError(data.error?.message || "Failed to fetch weather");
       }
