@@ -231,3 +231,49 @@ export function useStockSigmaCrawl() {
 
   return { loading, error, triggerSigmaCrawl };
 }
+
+export function useStockSigmaCompute() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const triggerCompute = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/crawling/stock/sigma/compute", { method: "POST" });
+      const data: ApiResponse<{ computed: number }> = await res.json();
+      if (!data.success) {
+        setError(data.error?.message || "Sigma compute failed");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { loading, error, triggerCompute };
+}
+
+export function useStockSync() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const triggerSync = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/crawling/stock/sync", { method: "POST" });
+      const data: ApiResponse<{ synced: number }> = await res.json();
+      if (!data.success) {
+        setError(data.error?.message || "Sync failed");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { loading, error, triggerSync };
+}
