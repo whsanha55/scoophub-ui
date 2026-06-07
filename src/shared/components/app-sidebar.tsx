@@ -18,8 +18,8 @@ import {
   MessagesSquare,
   Play,
   Mail,
-  Library,
   Inbox,
+  Library,
 } from "lucide-react";
 import {
   Sidebar,
