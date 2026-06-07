@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useNews, useNewsArticle, useNewsCrawl } from "@/domains/news/hooks/use-news";
+import { useNewsSummarizeRetry } from "@/domains/news/hooks/use-news-summarize-retry";
 import { NewsCard } from "@/domains/news/components/news-card";
 import { NewsDetail } from "@/domains/news/components/news-detail";
 import { NewsFilters } from "@/domains/news/components/news-filters";
@@ -21,6 +22,7 @@ export default function NewsPage() {
   const { articles, loading, total, fetchNews } = useNews();
   const { article: selectedArticle, fetchArticle } = useNewsArticle();
   const { loading: crawlLoading, triggerCrawl } = useNewsCrawl();
+  const { loading: retryLoading, triggerRetry } = useNewsSummarizeRetry();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [category, setCategory] = useState<string | null>(null);
   const [minImportance, setMinImportance] = useState<number | null>(null);
@@ -56,6 +58,11 @@ export default function NewsPage() {
     await loadNews();
   };
 
+  const handleRetry = async () => {
+    await triggerRetry();
+    await loadNews();
+  };
+
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -77,11 +84,18 @@ export default function NewsPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">뉴스</h1>
-        <CrawlTriggerButton
-          onClick={handleCrawl}
-          loading={crawlLoading}
-          label="뉴스 수집 실행"
-        />
+        <div className="flex items-center gap-2">
+          <CrawlTriggerButton
+            onClick={handleRetry}
+            loading={retryLoading}
+            label="요약 재시도"
+          />
+          <CrawlTriggerButton
+            onClick={handleCrawl}
+            loading={crawlLoading}
+            label="뉴스 수집 실행"
+          />
+        </div>
       </div>
 
       <NewsFilters
