@@ -16,8 +16,8 @@ import {
   Zap,
   Rocket,
   MessagesSquare,
-  Mail,
   Play,
+  Mail,
 } from "lucide-react";
 import {
   Sidebar,
