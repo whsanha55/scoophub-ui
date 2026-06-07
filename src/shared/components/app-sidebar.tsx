@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   BookOpen,
   Wrench,
+  FileText,
 } from "lucide-react";
 import {
   Sidebar,
@@ -32,6 +33,7 @@ const navItems = [
   { title: "News", href: "/news", icon: Newspaper },
   { title: "Stock", href: "/stock", icon: TrendingUp },
   { title: "GitHub", href: "/github", icon: Flame },
+  { title: "arXiv", href: "/arxiv", icon: FileText },
   { title: "Weather", href: "/weather", icon: Cloud },
   { title: "System", href: "/system", icon: Wrench },
   { title: "Swagger Docs", href: "/docs", icon: BookOpen, external: true },
