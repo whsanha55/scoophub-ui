@@ -9,7 +9,16 @@ interface NewsletterCardProps {
   article: NewsletterArticle;
 }
 
+function parseTags(tags: string[] | string | undefined): string[] {
+  if (Array.isArray(tags)) return tags;
+  if (typeof tags === "string") {
+    try { return JSON.parse(tags); } catch { return []; }
+  }
+  return [];
+}
+
 export function NewsletterCard({ article }: NewsletterCardProps) {
+  const tags = parseTags(article.tags);
   return (
     <a
       href={article.url}
@@ -37,9 +46,9 @@ export function NewsletterCard({ article }: NewsletterCardProps) {
               {article.summary}
             </p>
           )}
-          {article.tags.length > 0 && (
+          {tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              {article.tags.slice(0, 3).map((tag) => (
+              {tags.slice(0, 3).map((tag) => (
                 <Badge key={tag} variant="outline">
                   {tag}
                 </Badge>
