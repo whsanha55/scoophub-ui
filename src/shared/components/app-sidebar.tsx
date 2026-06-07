@@ -40,6 +40,7 @@ import { ThemeToggle } from "./theme-toggle";
 const navItems = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "News", href: "/news", icon: Newspaper },
+  { title: "News Sources", href: "/news/sources", icon: Library },
   { title: "Stock", href: "/stock", icon: TrendingUp },
   { title: "GitHub", href: "/github", icon: Flame },
   { title: "arXiv", href: "/arxiv", icon: FileText },
@@ -51,7 +52,6 @@ const navItems = [
   { title: "YouTube", href: "/youtube", icon: Play },
   { title: "Newsletter", href: "/tech-newsletter", icon: Mail },
   { title: "RSS", href: "/rss", icon: Inbox },
-  { title: "News Sources", href: "/news/sources", icon: Library },
   { title: "Weather", href: "/weather", icon: Cloud },
   { title: "System", href: "/system", icon: Wrench },
   { title: "Swagger Docs", href: "/docs", icon: BookOpen, external: true },

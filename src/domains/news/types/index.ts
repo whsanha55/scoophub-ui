@@ -44,3 +44,27 @@ export const NEWS_CATEGORIES = [
 ] as const;
 
 export type NewsCategory = (typeof NEWS_CATEGORIES)[number];
+
+export interface NewsSource {
+  id: number;
+  name: string;
+  url: string;
+  active: boolean;
+  config: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NewsSourceCreateParams {
+  name: string;
+  url: string;
+  active?: boolean;
+  config?: string;
+}
+
+export interface NewsSourceUpdateParams {
+  name?: string;
+  url?: string;
+  active?: boolean;
+  config?: string;
+}
