@@ -12,6 +12,8 @@ import {
   Wrench,
   FileText,
   Rss,
+  Coins,
+  Zap,
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,6 +38,8 @@ const navItems = [
   { title: "GitHub", href: "/github", icon: Flame },
   { title: "arXiv", href: "/arxiv", icon: FileText },
   { title: "Dev.to", href: "/devto", icon: Rss },
+  { title: "Crypto", href: "/crypto", icon: Coins },
+  { title: "Hacker News", href: "/hacker-news", icon: Zap },
   { title: "Weather", href: "/weather", icon: Cloud },
   { title: "System", href: "/system", icon: Wrench },
   { title: "Swagger Docs", href: "/docs", icon: BookOpen, external: true },
