@@ -8,6 +8,8 @@ import {
   useSigmaData,
   useStockAnalyze,
   useStockSigmaCrawl,
+  useStockSigmaCompute,
+  useStockSync,
   useMarketStatus,
 } from "@/domains/stock/hooks/use-stock";
 import { StockReportCard } from "@/domains/stock/components/stock-report-card";
@@ -31,6 +33,8 @@ export default function StockPage() {
   const { sigma, fetchSigma } = useSigmaData();
   const { loading: analyzeLoading, triggerAnalyze } = useStockAnalyze();
   const { loading: sigmaCrawlLoading, triggerSigmaCrawl } = useStockSigmaCrawl();
+  const { loading: sigmaComputeLoading, triggerCompute } = useStockSigmaCompute();
+  const { loading: syncLoading, triggerSync } = useStockSync();
   const { status: marketStatus, fetchStatus } = useMarketStatus();
   const [selectedSigma, setSelectedSigma] = useState<SigmaData | null>(null);
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
@@ -48,6 +52,16 @@ export default function StockPage() {
 
   const handleSigmaCrawl = async () => {
     await triggerSigmaCrawl();
+    await fetchReports(true);
+  };
+
+  const handleSigmaCompute = async () => {
+    await triggerCompute();
+    await fetchReports(true);
+  };
+
+  const handleSync = async () => {
+    await triggerSync();
     await fetchReports(true);
   };
 
@@ -81,6 +95,16 @@ export default function StockPage() {
             onClick={handleSigmaCrawl}
             loading={sigmaCrawlLoading}
             label="시그마 수집"
+          />
+          <CrawlTriggerButton
+            onClick={handleSigmaCompute}
+            loading={sigmaComputeLoading}
+            label="Sigma 계산"
+          />
+          <CrawlTriggerButton
+            onClick={handleSync}
+            loading={syncLoading}
+            label="캔들 동기화"
           />
         </div>
       </div>
