@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCryptoPrices, useCryptoCrawl } from "@/domains/crypto/hooks/use-crypto";
 import { CryptoCard } from "@/domains/crypto/components/crypto-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
@@ -19,17 +19,19 @@ export default function CryptoPage() {
   const { prices, loading, fetchPrices } = useCryptoPrices();
   const { loading: crawlLoading, triggerCrawl } = useCryptoCrawl();
 
+  const [sort, setSort] = useState<Sort>("market_cap");
+
   useEffect(() => {
-    fetchPrices({ sort: "market_cap", order: "desc", limit: 50 });
-  }, [fetchPrices]);
+    fetchPrices({ sort, order: "desc", limit: 50 });
+  }, [sort, fetchPrices]);
 
   const handleSortChange = (newSort: Sort) => {
-    fetchPrices({ sort: newSort, order: "desc", limit: 50 });
+    setSort(newSort);
   };
 
   const handleCrawl = async () => {
     await triggerCrawl();
-    await fetchPrices({ sort: "market_cap", order: "desc", limit: 50 });
+    await fetchPrices({ sort, order: "desc", limit: 50 });
   };
 
   return (
@@ -47,7 +49,7 @@ export default function CryptoPage() {
         {SORT_OPTIONS.map((opt) => (
           <Button
             key={opt.value}
-            variant="outline"
+            variant={sort === opt.value ? "default" : "outline"}
             size="sm"
             onClick={() => handleSortChange(opt.value)}
           >
