@@ -14,6 +14,8 @@ import {
   Rss,
   Coins,
   Zap,
+  Rocket,
+  MessagesSquare,
 } from "lucide-react";
 import {
   Sidebar,
@@ -40,6 +42,8 @@ const navItems = [
   { title: "Dev.to", href: "/devto", icon: Rss },
   { title: "Crypto", href: "/crypto", icon: Coins },
   { title: "Hacker News", href: "/hacker-news", icon: Zap },
+  { title: "Reddit", href: "/reddit", icon: MessagesSquare },
+  { title: "Product Hunt", href: "/product-hunt", icon: Rocket },
   { title: "Weather", href: "/weather", icon: Cloud },
   { title: "System", href: "/system", icon: Wrench },
   { title: "Swagger Docs", href: "/docs", icon: BookOpen, external: true },
