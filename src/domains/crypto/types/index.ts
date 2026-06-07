@@ -2,8 +2,8 @@ export interface CryptoPrice {
   id: number;
   symbol: string;
   name: string;
-  current_price: number;
-  price_change_percentage_24h: number;
+  current_price: number | null;
+  price_change_percentage_24h: number | null;
   market_cap: number | null;
   total_volume: number | null;
   image_url: string | null;

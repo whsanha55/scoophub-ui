@@ -8,7 +8,8 @@ interface CryptoCardProps {
   crypto: CryptoPrice;
 }
 
-function formatPrice(price: number): string {
+function formatPrice(price: number | null): string {
+  if (price === null) return "—";
   return price.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -24,7 +25,8 @@ function formatLargeNumber(value: number | null): string | null {
 }
 
 export function CryptoCard({ crypto }: CryptoCardProps) {
-  const isPositive = crypto.price_change_percentage_24h >= 0;
+  const change = crypto.price_change_percentage_24h;
+  const isPositive = change !== null ? change >= 0 : true;
   const ChangeIcon = isPositive ? ArrowUpRight : ArrowDownRight;
 
   return (
@@ -54,7 +56,7 @@ export function CryptoCard({ crypto }: CryptoCardProps) {
           <p className="text-lg font-bold">${formatPrice(crypto.current_price)}</p>
           <div className={`flex items-center gap-1 text-sm ${isPositive ? "text-green-500" : "text-red-500"}`}>
             <ChangeIcon className="h-4 w-4" />
-            <span>{Math.abs(crypto.price_change_percentage_24h).toFixed(2)}%</span>
+            <span>{change !== null ? `${Math.abs(change).toFixed(2)}%` : "—"}</span>
           </div>
           {(crypto.market_cap !== null || crypto.total_volume !== null) && (
             <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
