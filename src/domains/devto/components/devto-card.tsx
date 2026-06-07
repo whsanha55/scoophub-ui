@@ -9,7 +9,16 @@ interface DevtoCardProps {
   article: DevtoArticle;
 }
 
+function parseTags(tags: string[] | string): string[] {
+  if (Array.isArray(tags)) return tags;
+  if (typeof tags === "string") {
+    try { return JSON.parse(tags); } catch { return []; }
+  }
+  return [];
+}
+
 export function DevtoCard({ article }: DevtoCardProps) {
+  const tags = parseTags(article.tags);
   return (
     <a
       href={article.url}
@@ -36,13 +45,15 @@ export function DevtoCard({ article }: DevtoCardProps) {
             <span>{article.author}</span>
             <Badge variant="secondary">{article.source}</Badge>
           </div>
+          {tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
-            {article.tags.slice(0, 3).map((tag) => (
+            {tags.slice(0, 3).map((tag) => (
               <Badge key={tag} variant="outline" className="text-xs">
                 {tag}
               </Badge>
             ))}
           </div>
+          )}
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Heart className="h-3.5 w-3.5" />
