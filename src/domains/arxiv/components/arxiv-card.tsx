@@ -9,6 +9,14 @@ interface ArxivCardProps {
   paper: ArxivPaper;
 }
 
+function parseArrayField(field: string[] | string | undefined): string[] {
+  if (Array.isArray(field)) return field;
+  if (typeof field === "string") {
+    try { return JSON.parse(field); } catch { return []; }
+  }
+  return [];
+}
+
 function formatAuthors(authors: string[]): string {
   if (authors.length > 3) {
     return `${authors.slice(0, 3).join(", ")} et al.`;
@@ -30,6 +38,8 @@ function formatDate(dateStr: string): string {
 }
 
 export function ArxivCard({ paper }: ArxivCardProps) {
+  const authors = parseArrayField(paper.authors);
+  const categories = parseArrayField(paper.categories);
   return (
     <a
       href={paper.url}
@@ -45,9 +55,9 @@ export function ArxivCard({ paper }: ArxivCardProps) {
           </div>
         </CardHeader>
         <CardContent className="space-y-2">
-          {paper.authors.length > 0 && (
+          {authors.length > 0 && (
             <p className="text-sm text-muted-foreground">
-              {formatAuthors(paper.authors)}
+              {formatAuthors(authors)}
             </p>
           )}
           {paper.summary && (
@@ -55,13 +65,15 @@ export function ArxivCard({ paper }: ArxivCardProps) {
               {paper.summary}
             </p>
           )}
+          {categories.length > 0 && (
           <div className="flex flex-wrap items-center gap-1">
-            {paper.categories.map((category) => (
+            {categories.map((category) => (
               <Badge key={category} variant="outline">
                 {category}
               </Badge>
             ))}
           </div>
+          )}
           <p className="text-xs text-muted-foreground">
             {formatDate(paper.published_at)}
           </p>

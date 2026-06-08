@@ -9,7 +9,16 @@ interface ProductHuntCardProps {
   post: ProductHuntPost;
 }
 
+function parseTopics(topics: string[] | string | undefined): string[] {
+  if (Array.isArray(topics)) return topics;
+  if (typeof topics === "string") {
+    try { return JSON.parse(topics); } catch { return []; }
+  }
+  return [];
+}
+
 export function ProductHuntCard({ post }: ProductHuntCardProps) {
+  const topics = parseTopics(post.topics);
   return (
     <a
       href={post.url}
@@ -40,9 +49,9 @@ export function ProductHuntCard({ post }: ProductHuntCardProps) {
               {post.comments_count}
             </span>
           </div>
-          {post.topics.length > 0 && (
+          {topics.length > 0 && (
             <div className="flex flex-wrap items-center gap-1">
-              {post.topics.slice(0, 3).map((topic) => (
+              {topics.slice(0, 3).map((topic) => (
                 <Badge key={topic} variant="outline">
                   {topic}
                 </Badge>
