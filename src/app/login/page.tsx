@@ -17,6 +17,7 @@ export default function LoginPage() {
           </p>
         </div>
         <Button
+          nativeButton={false}
           render={<a href="/api/auth/login" />}
           size="lg"
           className="w-full cursor-pointer"
