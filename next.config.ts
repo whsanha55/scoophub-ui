@@ -6,10 +6,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   async rewrites() {
     return [
-      {
-        source: "/api/:path*",
-        destination: `${API_URL}/api/:path*`,
-      },
+      // /api/:path* 프록시 + Bearer 주입은 src/proxy.ts가 담당.
       {
         source: "/docs",
         destination: `${API_URL}/docs`,
