@@ -14,6 +14,7 @@ export default function ForbiddenPage() {
           </p>
         </div>
         <Button
+          nativeButton={false}
           render={<a href="/api/auth/logout" />}
           variant="outline"
           className="w-full cursor-pointer"

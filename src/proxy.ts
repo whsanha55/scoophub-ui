@@ -6,6 +6,7 @@ import {
   PUBLIC_PAGES,
   API_REWRITE_EXCLUDE,
   API_TOKEN_EXCLUDE,
+  API_COOKIE_PASSTHROUGH,
 } from "@/shared/lib/auth-config";
 
 // Next 16: middleware.ts → proxy.ts. 인증 가드 + /api/* 프록시(Bearer 주입) 통합.
@@ -21,7 +22,11 @@ export function proxy(request: NextRequest) {
     }
 
     const headers = new Headers(request.headers);
-    headers.delete("cookie"); // 원본 쿠키 백엔드 유출 방지
+    // callback은 백엔드가 oauth_state 쿠키로 state 검증하므로 cookie 통과.
+    // 그 외 /api/*는 원본 쿠키 백엔드 유출 방지를 위해 삭제.
+    if (!API_COOKIE_PASSTHROUGH.includes(pathname)) {
+      headers.delete("cookie");
+    }
     if (!API_TOKEN_EXCLUDE.includes(pathname) && token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
