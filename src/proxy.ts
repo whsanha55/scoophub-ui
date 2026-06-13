@@ -43,7 +43,11 @@ export function proxy(request: NextRequest) {
     url.pathname = to;
     const fwdHost = request.headers.get("x-forwarded-host");
     if (fwdHost) {
-      url.host = fwdHost;
+      // host setter는 입력에 포트가 없으면 기존 포트(20020)를 안 지움.
+      // hostname + port를 따로 지정해야 내부 포트가 누출되지 않음.
+      const [host, port] = fwdHost.split(":");
+      url.hostname = host;
+      url.port = port ?? "";
       const fwdProto = request.headers.get("x-forwarded-proto");
       if (fwdProto) url.protocol = `${fwdProto}:`;
     }
