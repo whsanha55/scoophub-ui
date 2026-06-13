@@ -9,19 +9,23 @@ export async function GET(req: Request) {
   const token = url.searchParams.get("token");
 
   if (!token) {
+    // 상대 경로 Location — 운영 reverse proxy 뒤에서 req.url host가
+    // 내부 bind(0.0.0.0:20020)로 잡혀 절대 URL 사용 시 잘못된 host로 redirect됨.
     return new Response(null, {
       status: 302,
-      headers: { Location: new URL("/login", url).toString() },
+      headers: { Location: "/login" },
     });
   }
 
-  const secure = url.protocol === "https:";
+  const secure =
+    url.protocol === "https:" ||
+    req.headers.get("x-forwarded-proto") === "https";
   const cookie = `${AUTH_COOKIE_NAME}=${token}; Path=/; HttpOnly; SameSite=Lax${secure ? "; Secure" : ""}`;
 
   return new Response(null, {
     status: 302,
     headers: {
-      Location: new URL("/", url).toString(),
+      Location: "/",
       "Set-Cookie": cookie,
     },
   });

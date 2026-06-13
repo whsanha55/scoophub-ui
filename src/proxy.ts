@@ -36,17 +36,27 @@ export function proxy(request: NextRequest) {
   }
 
   // 2. 페이지 인증 가드
+  // 운영 reverse proxy 뒤에서 nextUrl host가 내부 bind(0.0.0.0:20020)로
+  // 잡히므로, X-Forwarded-* 헤더로 공개 origin을 복원해 redirect.
+  const redirectTo = (to: string) => {
+    const url = request.nextUrl.clone();
+    url.pathname = to;
+    const fwdHost = request.headers.get("x-forwarded-host");
+    if (fwdHost) {
+      url.host = fwdHost;
+      const fwdProto = request.headers.get("x-forwarded-proto");
+      if (fwdProto) url.protocol = `${fwdProto}:`;
+    }
+    return NextResponse.redirect(url);
+  };
+
   const isPublic = PUBLIC_PAGES.includes(pathname);
   if (!token && !isPublic) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+    return redirectTo("/login");
   }
   // 이미 로그인한 사용자가 /login 접근 시 홈으로
   if (token && pathname === "/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.redirect(url);
+    return redirectTo("/");
   }
 
   return NextResponse.next();
