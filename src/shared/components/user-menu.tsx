@@ -26,7 +26,10 @@ export function UserMenu() {
       .then(async (res) => {
         if (!active) return;
         if (res.status === 401) {
-          router.replace("/login");
+          // 쿠키는 있으나 백엔드가 JWT를 거부한 상태.
+          // /login으로 보내면 proxy가 (토큰 존재) → / 로 되돌려 무한루프.
+          // logout으로 보내 access_token 쿠키를 만료시킨 뒤 /login으로.
+          window.location.href = "/api/auth/logout";
           return;
         }
         if (res.status === 403) {
