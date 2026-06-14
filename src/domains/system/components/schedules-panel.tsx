@@ -19,6 +19,7 @@ export function SchedulesPanel() {
   const { schedules, loading, error, fetchSchedules, patchSchedule } = useSchedules();
   const [editing, setEditing] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSchedules();
@@ -28,10 +29,11 @@ export function SchedulesPanel() {
 
   const handleToggle = async (crawler: string, jobId: string, next: boolean) => {
     setSaving(key(crawler, jobId));
+    setActionError(null);
     try {
       await patchSchedule(crawler, jobId, { is_active: next });
-    } catch {
-      // patchSchedule 내부 throw; 여기선 상태 갱신 안 됨
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "스케줄 업데이트 실패");
     } finally {
       setSaving(null);
     }
@@ -41,8 +43,12 @@ export function SchedulesPanel() {
     const raw = editing[key(crawler, jobId)];
     if (!raw) return;
     const n = Number(raw);
-    if (Number.isNaN(n) || n <= 0) return;
+    if (Number.isNaN(n) || n <= 0) {
+      setActionError("주기는 양수(초)여야 합니다");
+      return;
+    }
     setSaving(key(crawler, jobId));
+    setActionError(null);
     try {
       await patchSchedule(crawler, jobId, { interval_seconds: n, cron_expr: null });
       setEditing((prev) => {
@@ -50,8 +56,8 @@ export function SchedulesPanel() {
         delete next[key(crawler, jobId)];
         return next;
       });
-    } catch {
-      // 무시
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "주기 저장 실패");
     } finally {
       setSaving(null);
     }
@@ -75,6 +81,8 @@ export function SchedulesPanel() {
       )}
 
       {error && <p className="text-destructive text-sm">{error}</p>}
+
+      {actionError && <p className="text-destructive text-sm">{actionError}</p>}
 
       {!loading && !error && schedules.length === 0 && (
         <p className="text-muted-foreground text-sm">스케줄이 없습니다.</p>

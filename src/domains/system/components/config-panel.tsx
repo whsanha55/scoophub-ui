@@ -13,13 +13,27 @@ function ConfigForm({
   entry,
   disabled,
   onSave,
+  onError,
 }: {
   entry: CrawlConfigEntry;
   disabled: boolean;
   onSave: (crawler: string, params: Record<string, unknown>) => void;
+  onError: (msg: string | null) => void;
 }) {
   // 부모가 key={params 직렬화}로 리마운트시키므로 초기값만 사용.
   const [draft, setDraft] = useState(() => JSON.stringify(entry.params, null, 2));
+
+  const handleSaveClick = () => {
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(draft);
+    } catch (err) {
+      onError(err instanceof Error ? `JSON 파싱 실패: ${err.message}` : "JSON 파싱 실패");
+      return;
+    }
+    onError(null);
+    onSave(entry.crawler, parsed);
+  };
 
   return (
     <div className="space-y-2">
@@ -33,14 +47,7 @@ function ConfigForm({
         size="sm"
         variant="outline"
         disabled={disabled}
-        onClick={() => {
-          try {
-            const parsed = JSON.parse(draft);
-            onSave(entry.crawler, parsed);
-          } catch {
-            // 파싱 실패 — 저장하지 않음
-          }
-        }}
+        onClick={handleSaveClick}
         className="cursor-pointer transition-colors duration-200"
       >
         <Save className="h-4 w-4 mr-1" />
@@ -53,6 +60,7 @@ function ConfigForm({
 export function ConfigPanel() {
   const { configs, loading, error, fetchConfigs, patchConfig } = useCrawlConfig();
   const [saving, setSaving] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchConfigs();
@@ -62,8 +70,9 @@ export function ConfigPanel() {
     setSaving(crawler);
     try {
       await patchConfig(crawler, params);
-    } catch {
-      // 무시
+      setActionError(null);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "config 저장 실패");
     } finally {
       setSaving(null);
     }
@@ -88,6 +97,8 @@ export function ConfigPanel() {
 
       {error && <p className="text-destructive text-sm">{error}</p>}
 
+      {actionError && <p className="text-destructive text-sm">{actionError}</p>}
+
       {!loading && !error && configs.length === 0 && (
         <p className="text-muted-foreground text-sm">config이 없습니다.</p>
       )}
@@ -109,6 +120,7 @@ export function ConfigPanel() {
                 entry={c}
                 disabled={saving === c.crawler}
                 onSave={handleSave}
+                onError={setActionError}
               />
             </CardContent>
           </Card>
