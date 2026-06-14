@@ -1,12 +1,36 @@
-// #43 — KAL 보너스 도메인 타입.
-// 백엔드 스키마에 맞춰 점진 확장. 공통 필드만 명시, 나머지는 보존.
-export interface KalBonusItem {
-  id?: string | number;
-  account?: string;
-  member?: string;
-  mileage?: number;
-  bonus?: number;
-  status?: string;
-  updated_at?: string;
-  [key: string]: unknown;
+// #43 — KAL 보너스 도메인 타입 (백엔드 parsed 스키마 반영)
+
+export interface KalBonusFlight {
+  flight: string;
+  dep_time: string;
+  front_booking_class: string;
+  cabin_label: string;
+  available: boolean;
 }
+
+export interface KalBonusDay {
+  date: string; // YYYYMMDD
+  flights: KalBonusFlight[];
+}
+
+export interface KalBonusParsed {
+  departure: string;
+  arrival: string;
+  days: KalBonusDay[];
+}
+
+export interface KalBonusItem {
+  key: string; // YYYYMM-DEP-ARR
+  date_at: string;
+  updated_at: string;
+  response: unknown;
+  parsed: KalBonusParsed;
+}
+
+// 유형 고정 순서 (표시 일관성)
+export const CABIN_ORDER = [
+  "일반석 보너스",
+  "프레스티지석 보너스",
+  "일등석 보너스/좌석승급",
+  "프레스티지석 좌석승급",
+] as const;
