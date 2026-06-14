@@ -18,7 +18,6 @@ import { SigmaPanel } from "@/domains/stock/components/sigma-panel";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { SigmaData } from "@/domains/stock/types";
 
 export default function StockPage() {
   const { reports, loading: reportsLoading, fetchReports } = useAllStockReports();
@@ -36,7 +35,6 @@ export default function StockPage() {
   const { loading: sigmaComputeLoading, triggerCompute } = useStockSigmaCompute();
   const { loading: syncLoading, triggerSync } = useStockSync();
   const { status: marketStatus, fetchStatus } = useMarketStatus();
-  const [selectedSigma, setSelectedSigma] = useState<SigmaData | null>(null);
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
 
   useEffect(() => {
@@ -70,11 +68,8 @@ export default function StockPage() {
     await fetchSigma(ticker);
   };
 
-  useEffect(() => {
-    if (selectedTicker && sigma) {
-      setSelectedSigma(sigma);
-    }
-  }, [selectedTicker, sigma]);
+  // 티커 선택 시 sigma를 파생값으로 노출 (effect 내 setState 회피)
+  const selectedSigma = selectedTicker ? sigma : null;
 
   return (
     <div className="space-y-6">

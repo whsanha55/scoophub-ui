@@ -4,6 +4,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { HealthPanel } from "@/domains/system/components/health-panel";
 import { CrawlLogsPanel } from "@/domains/system/components/crawl-logs-panel";
 import { LlmTestPanel } from "@/domains/system/components/llm-test-panel";
+import { SchedulesPanel } from "@/domains/system/components/schedules-panel";
+import { ConfigPanel } from "@/domains/system/components/config-panel";
 
 export default function SystemPage() {
   return (
@@ -15,6 +17,8 @@ export default function SystemPage() {
           <TabsTrigger value="health">헬스 체크</TabsTrigger>
           <TabsTrigger value="crawl-logs">크롤링 로그</TabsTrigger>
           <TabsTrigger value="llm-test">LLM 테스트</TabsTrigger>
+          <TabsTrigger value="schedules">스케줄</TabsTrigger>
+          <TabsTrigger value="config">config</TabsTrigger>
         </TabsList>
         <TabsContent value="health">
           <HealthPanel />
@@ -24,6 +28,12 @@ export default function SystemPage() {
         </TabsContent>
         <TabsContent value="llm-test">
           <LlmTestPanel />
+        </TabsContent>
+        <TabsContent value="schedules">
+          <SchedulesPanel />
+        </TabsContent>
+        <TabsContent value="config">
+          <ConfigPanel />
         </TabsContent>
       </Tabs>
     </div>

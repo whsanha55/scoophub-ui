@@ -98,3 +98,39 @@ export interface StockAnalyzeResult {
   errors: number;
   results: { ticker: string; status: string; detail?: string }[];
 }
+
+// #44 — 분석 / 실시간 quote / WEM
+export interface StockQuote {
+  ticker: string;
+  price: number;
+  change: number;
+  change_rate: number;
+  volume?: number;
+  high?: number;
+  low?: number;
+  open?: number;
+  prev_close?: number;
+  timestamp?: string;
+  source?: string;
+}
+
+export interface StockWem {
+  ticker: string;
+  expiry_date?: string;
+  expected_move_high: number;
+  expected_move_low: number;
+  expected_move_pct: number;
+  expected_move?: number;
+  source?: string;
+  updated_at?: string;
+}
+
+export interface StockAnalysis {
+  ticker: string;
+  signal?: string;
+  score?: number;
+  summary?: string;
+  recommendation?: string;
+  data_date?: string;
+  [key: string]: unknown;
+}

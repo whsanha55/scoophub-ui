@@ -10,6 +10,9 @@ import type {
   WatchlistUpdateInput,
   MarketStatus,
   StockAnalyzeResult,
+  StockQuote,
+  StockWem,
+  StockAnalysis,
 } from "../types";
 import type { ApiResponse } from "@/shared/types";
 
@@ -276,4 +279,166 @@ export function useStockSync() {
   }, []);
 
   return { loading, error, triggerSync };
+}
+
+// #44 — 실시간 quote
+export function useStockQuote() {
+  const [quote, setQuote] = useState<StockQuote | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchQuote = useCallback(async (ticker: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/stock/quote/${encodeURIComponent(ticker)}`);
+      const data: ApiResponse<StockQuote> = await res.json();
+      if (data.success && data.data) {
+        setQuote(data.data);
+      } else {
+        setError(data.error?.message || "Failed to fetch quote");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { quote, loading, error, fetchQuote };
+}
+
+// #44 — 주간 예상 움직임 (WEM)
+export function useStockWem() {
+  const [wem, setWem] = useState<StockWem | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchWem = useCallback(async (ticker: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/stock/sigma/${encodeURIComponent(ticker)}/wem`,
+      );
+      const data: ApiResponse<StockWem> = await res.json();
+      if (data.success && data.data) {
+        setWem(data.data);
+      } else {
+        setError(data.error?.message || "Failed to fetch WEM");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { wem, loading, error, fetchWem };
+}
+
+// #44 — 분석 결과 (전체)
+export function useStockAnalysis() {
+  const [items, setItems] = useState<StockAnalysis[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAnalysis = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/stock/analysis");
+      const data: ApiResponse<StockAnalysis[]> = await res.json();
+      if (data.success && data.data) {
+        setItems(data.data);
+      } else {
+        setError(data.error?.message || "Failed to fetch analysis");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { items, loading, error, fetchAnalysis };
+}
+
+// #44 — 최신 분석
+export function useStockAnalysisLatest() {
+  const [analysis, setAnalysis] = useState<StockAnalysis | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLatest = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/stock/analysis/latest");
+      const data: ApiResponse<StockAnalysis> = await res.json();
+      if (data.success && data.data) {
+        setAnalysis(data.data);
+      } else {
+        setError(data.error?.message || "Failed to fetch latest analysis");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { analysis, loading, error, fetchLatest };
+}
+
+// #44 — Sigma 데이터 새로고침
+export function useStockRefreshSigma() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const triggerRefreshSigma = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/crawling/stock/refresh-sigma", {
+        method: "POST",
+      });
+      const data: ApiResponse<{ refreshed?: number }> = await res.json();
+      if (!data.success) {
+        setError(data.error?.message || "Sigma refresh failed");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { loading, error, triggerRefreshSigma };
+}
+
+// #44 — WEM 새로고침
+export function useStockRefreshWem() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const triggerRefreshWem = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/crawling/stock/refresh-wem", {
+        method: "POST",
+      });
+      const data: ApiResponse<{ refreshed?: number }> = await res.json();
+      if (!data.success) {
+        setError(data.error?.message || "WEM refresh failed");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { loading, error, triggerRefreshWem };
 }
