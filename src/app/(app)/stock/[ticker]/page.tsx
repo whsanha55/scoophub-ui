@@ -3,13 +3,21 @@
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useStockReports, useSigmaData } from "@/domains/stock/hooks/use-stock";
+import {
+  useStockReports,
+  useSigmaData,
+  useStockQuote,
+  useStockWem,
+  useStockAnalysisLatest,
+  useStockRefreshSigma,
+  useStockRefreshWem,
+} from "@/domains/stock/hooks/use-stock";
 import { SigmaPanel } from "@/domains/stock/components/sigma-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 
 function signalColor(signal: string): string {
   const s = signal.toUpperCase();
@@ -24,13 +32,33 @@ export default function StockDetailPage() {
 
   const { reports, loading, fetchReports } = useStockReports();
   const { sigma, loading: sigmaLoading, fetchSigma } = useSigmaData();
+  const { quote, loading: quoteLoading, error: quoteError, fetchQuote } = useStockQuote();
+  const { wem, loading: wemLoading, error: wemError, fetchWem } = useStockWem();
+  const { analysis, loading: analysisLoading, error: analysisError, fetchLatest } =
+    useStockAnalysisLatest();
+  const { loading: refreshSigmaLoading, error: refreshSigmaError, triggerRefreshSigma } =
+    useStockRefreshSigma();
+  const { loading: refreshWemLoading, error: refreshWemError, triggerRefreshWem } =
+    useStockRefreshWem();
 
   useEffect(() => {
     if (ticker) {
       fetchReports(ticker);
       fetchSigma(ticker);
+      fetchQuote(ticker);
+      fetchWem(ticker);
+      fetchLatest();
     }
-  }, [ticker, fetchReports, fetchSigma]);
+  }, [ticker, fetchReports, fetchSigma, fetchQuote, fetchWem, fetchLatest]);
+
+  const handleRefreshSigma = async () => {
+    await triggerRefreshSigma();
+    fetchSigma(ticker);
+  };
+  const handleRefreshWem = async () => {
+    await triggerRefreshWem();
+    fetchWem(ticker);
+  };
 
   const report = reports.length > 0 ? reports[0] : null;
 
@@ -200,6 +228,188 @@ export default function StockDetailPage() {
 
       {/* Sigma Panel (detailed options data) */}
       {sigma && <SigmaPanel sigma={sigma} />}
+
+      {/* #44 — 실시간 Quote */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center justify-between">
+            <span>실시간 주가</span>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={quoteLoading}
+              onClick={() => fetchQuote(ticker)}
+              className="cursor-pointer transition-colors duration-200"
+            >
+              <RefreshCw className={`h-4 w-4 mr-1 ${quoteLoading ? "animate-spin" : ""}`} />
+              새로고침
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {quoteError && <p className="text-destructive text-sm">{quoteError}</p>}
+          {!quote && !quoteLoading && !quoteError && (
+            <p className="text-muted-foreground text-sm">실시간 quote를 불러올 수 없습니다.</p>
+          )}
+          {quote && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+              <div>
+                <span className="text-muted-foreground">현재가</span>
+                <p className="font-semibold">${quote.price.toFixed(2)}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">변동</span>
+                <p
+                  className={`font-semibold ${
+                    quote.change > 0
+                      ? "text-green-500"
+                      : quote.change < 0
+                        ? "text-red-500"
+                        : "text-muted-foreground"
+                  }`}
+                >
+                  {quote.change > 0 ? "+" : ""}
+                  {quote.change.toFixed(2)} ({quote.change_rate.toFixed(2)}%)
+                </p>
+              </div>
+              {quote.volume != null && (
+                <div>
+                  <span className="text-muted-foreground">거래량</span>
+                  <p className="font-semibold">{quote.volume.toLocaleString()}</p>
+                </div>
+              )}
+              {quote.timestamp && (
+                <div>
+                  <span className="text-muted-foreground">시각</span>
+                  <p className="font-semibold">{quote.timestamp.replace("T", " ").slice(0, 19)}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* #44 — WEM (주간 예상 움직임) */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center justify-between">
+            <span>주간 예상 움직임 (WEM)</span>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={refreshWemLoading || wemLoading}
+              onClick={handleRefreshWem}
+              className="cursor-pointer transition-colors duration-200"
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-1 ${refreshWemLoading ? "animate-spin" : ""}`}
+              />
+              WEM 새로고침
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {(wemError || refreshWemError) && (
+            <p className="text-destructive text-sm">{wemError || refreshWemError}</p>
+          )}
+          {!wem && !wemLoading && !wemError && (
+            <p className="text-muted-foreground text-sm">WEM 데이터가 없습니다.</p>
+          )}
+          {wem && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+              <div>
+                <span className="text-muted-foreground">예상 High</span>
+                <p className="font-semibold text-green-500">${wem.expected_move_high.toFixed(2)}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">예상 Low</span>
+                <p className="font-semibold text-red-500">${wem.expected_move_low.toFixed(2)}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">예상 변동폭</span>
+                <p className="font-semibold">{wem.expected_move_pct.toFixed(1)}%</p>
+              </div>
+              {wem.expiry_date && (
+                <div>
+                  <span className="text-muted-foreground">기준 만기</span>
+                  <p className="font-semibold">{wem.expiry_date}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* #44 — Sigma 새로고침 */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={refreshSigmaLoading}
+          onClick={handleRefreshSigma}
+          className="cursor-pointer transition-colors duration-200"
+        >
+          <RefreshCw
+            className={`h-4 w-4 mr-1 ${refreshSigmaLoading ? "animate-spin" : ""}`}
+          />
+          Sigma 새로고침
+        </Button>
+        {refreshSigmaError && (
+          <span className="text-destructive text-sm self-center">{refreshSigmaError}</span>
+        )}
+      </div>
+
+      {/* #44 — 분석 결과 */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center justify-between">
+            <span>분석</span>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={analysisLoading}
+              onClick={fetchLatest}
+              className="cursor-pointer transition-colors duration-200"
+            >
+              <RefreshCw className={`h-4 w-4 mr-1 ${analysisLoading ? "animate-spin" : ""}`} />
+              새로고침
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {analysisError && <p className="text-destructive text-sm">{analysisError}</p>}
+          {!analysis && !analysisLoading && !analysisError && (
+            <p className="text-muted-foreground text-sm">분석 결과가 없습니다.</p>
+          )}
+          {analysis && (
+            <div className="space-y-2 text-sm">
+              {analysis.signal && (
+                <p>
+                  <span className="text-muted-foreground">Signal: </span>
+                  <span className={`font-semibold ${signalColor(analysis.signal)}`}>
+                    {analysis.signal}
+                  </span>
+                </p>
+              )}
+              {analysis.score != null && (
+                <p>
+                  <span className="text-muted-foreground">Score: </span>
+                  <span className="font-semibold">{analysis.score}</span>
+                </p>
+              )}
+              {analysis.summary && (
+                <p className="text-muted-foreground whitespace-pre-wrap">{analysis.summary}</p>
+              )}
+              {analysis.recommendation && (
+                <p className="text-muted-foreground">추천: {analysis.recommendation}</p>
+              )}
+              {analysis.data_date && (
+                <p className="text-xs text-muted-foreground">기준일: {analysis.data_date}</p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Meta */}
       <div className="text-xs text-muted-foreground">

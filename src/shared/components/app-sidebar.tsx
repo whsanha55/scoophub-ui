@@ -18,6 +18,7 @@ import {
   Play,
   Mail,
   Library,
+  Plane,
 } from "lucide-react";
 import {
   Sidebar,
@@ -50,6 +51,7 @@ const navItems = [
   { title: "Reddit", href: "/reddit", icon: MessagesSquare },
   { title: "YouTube", href: "/youtube", icon: Play },
   { title: "Newsletter", href: "/tech-newsletter", icon: Mail },
+  { title: "KAL 보너스", href: "/kal-bonus", icon: Plane },
   { title: "Weather", href: "/weather", icon: Cloud },
   { title: "System", href: "/system", icon: Wrench },
   { title: "Swagger Docs", href: "/docs", icon: BookOpen, external: true },

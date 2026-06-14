@@ -30,3 +30,28 @@ export interface LLMTestResponse {
   model: string;
   content: string;
 }
+
+// #41 — crawl_schedule 런타임 관리
+export interface CrawlSchedule {
+  crawler: string;
+  job_id: string;
+  interval_seconds: number | null;
+  cron_expr: string | null;
+  is_active: boolean;
+  last_run_at: string | null;
+  next_run_at: string | null;
+}
+
+export interface CrawlSchedulePatch {
+  interval_seconds?: number | null;
+  cron_expr?: string | null;
+  is_active?: boolean;
+}
+
+// #42 — crawl_config 런타임 관리
+export interface CrawlConfigEntry {
+  crawler: string;
+  params: Record<string, unknown>;
+}
+
+export type CrawlConfigPatch = Record<string, unknown>;
