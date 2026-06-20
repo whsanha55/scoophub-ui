@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { useAuth } from "@/shared/hooks/use-auth";
 
 interface CrawlTriggerButtonProps {
   onClick: () => void;
@@ -14,6 +15,11 @@ export function CrawlTriggerButton({
   loading,
   label = "수집 실행",
 }: CrawlTriggerButtonProps) {
+  const { user, loading: authLoading } = useAuth();
+
+  // 비로그인·비-super는 mutation 버튼 미노출.
+  if (authLoading || !user?.is_super) return null;
+
   return (
     <Button
       onClick={onClick}
