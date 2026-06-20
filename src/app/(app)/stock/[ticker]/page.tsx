@@ -234,28 +234,28 @@ export default function StockDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-              {report.actionable_levels?.target != null && (
+              {report.actionable_levels?.target_price != null && (
                 <div>
                   <span className="text-muted-foreground">목표가</span>
-                  <p className="font-semibold">${report.actionable_levels.target.toFixed(2)}</p>
+                  <p className="font-semibold">${report.actionable_levels.target_price.toFixed(2)}</p>
                 </div>
               )}
-              {report.actionable_levels?.buy != null && (
+              {report.actionable_levels?.buy_zone != null && (
                 <div>
                   <span className="text-muted-foreground">매수가</span>
-                  <p className="font-semibold text-green-500">${report.actionable_levels.buy.toFixed(2)}</p>
+                  <p className="font-semibold text-green-500">${report.actionable_levels.buy_zone.toFixed(2)}</p>
                 </div>
               )}
-              {report.actionable_levels?.stop != null && (
+              {report.actionable_levels?.stop_loss != null && (
                 <div>
                   <span className="text-muted-foreground">손절가</span>
-                  <p className="font-semibold text-red-500">${report.actionable_levels.stop.toFixed(2)}</p>
+                  <p className="font-semibold text-red-500">${report.actionable_levels.stop_loss.toFixed(2)}</p>
                 </div>
               )}
-              {report.actionable_levels?.momentum != null && (
+              {report.actionable_levels?.momentum_fire && (
                 <div>
-                  <span className="text-muted-foreground">모멘텀</span>
-                  <p className="font-semibold">{report.actionable_levels.momentum.toFixed(2)}</p>
+                  <span className="text-muted-foreground">불타기</span>
+                  <p className="font-semibold text-orange-500">진입</p>
                 </div>
               )}
               {report.hit_rate != null && (
