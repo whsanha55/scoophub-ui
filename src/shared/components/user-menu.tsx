@@ -42,7 +42,9 @@ export function UserMenu() {
           return;
         }
         if (res.ok) {
-          setMe(await res.json());
+          const body = await res.json();
+          // ApiResponse({success, data}) 래핑 — data 언랩.
+          setMe(body?.data ?? body);
         } else if (res.status === 403) {
           // 로그인은 됐으나 super 아님. 본문에 사용자 정보가 있으면 사용,
           // 없어도 "로그인됨"으로 식별해 Google 로그인 진입점이 잘못 노출되지 않게.
