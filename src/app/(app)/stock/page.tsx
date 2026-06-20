@@ -11,11 +11,14 @@ import {
   useStockSigmaCompute,
   useStockSync,
   useMarketStatus,
+  useStockReportSend,
 } from "@/domains/stock/hooks/use-stock";
+import type { Timeframe } from "@/domains/stock/types";
 import { StockReportCard } from "@/domains/stock/components/stock-report-card";
 import { WatchlistPanel } from "@/domains/stock/components/watchlist-panel";
 import { SigmaPanel } from "@/domains/stock/components/sigma-panel";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -34,33 +37,36 @@ export default function StockPage() {
   const { loading: sigmaCrawlLoading, triggerSigmaCrawl } = useStockSigmaCrawl();
   const { loading: sigmaComputeLoading, triggerCompute } = useStockSigmaCompute();
   const { loading: syncLoading, triggerSync } = useStockSync();
+  const { loading: sendLoading, error: sendError, triggerSend } =
+    useStockReportSend();
   const { status: marketStatus, fetchStatus } = useMarketStatus();
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
+  const [timeframe, setTimeframe] = useState<Timeframe>("1D");
 
   useEffect(() => {
-    fetchReports(true);
+    fetchReports(true, timeframe);
     fetchWatchlist();
     fetchStatus();
-  }, [fetchReports, fetchWatchlist, fetchStatus]);
+  }, [fetchReports, fetchWatchlist, fetchStatus, timeframe]);
 
   const handleAnalyze = async () => {
     await triggerAnalyze();
-    await fetchReports(true);
+    await fetchReports(true, timeframe);
   };
 
   const handleSigmaCrawl = async () => {
     await triggerSigmaCrawl();
-    await fetchReports(true);
+    await fetchReports(true, timeframe);
   };
 
   const handleSigmaCompute = async () => {
     await triggerCompute();
-    await fetchReports(true);
+    await fetchReports(true, timeframe);
   };
 
   const handleSync = async () => {
     await triggerSync();
-    await fetchReports(true);
+    await fetchReports(true, timeframe);
   };
 
   const handleTickerClick = async (ticker: string) => {
@@ -76,6 +82,19 @@ export default function StockPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">주식</h1>
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {(["1D", "1W", "1M"] as const).map((tf) => (
+              <Button
+                key={tf}
+                size="sm"
+                variant={timeframe === tf ? "default" : "outline"}
+                onClick={() => setTimeframe(tf)}
+                className="cursor-pointer transition-colors duration-200"
+              >
+                {tf}
+              </Button>
+            ))}
+          </div>
           {marketStatus && (
             <Badge variant={marketStatus.is_open ? "default" : "secondary"}>
               {marketStatus.is_open ? "장 열림" : "장 닫힘"}
@@ -101,8 +120,15 @@ export default function StockPage() {
             loading={syncLoading}
             label="캔들 동기화"
           />
+          <CrawlTriggerButton
+            onClick={() => triggerSend()}
+            loading={sendLoading}
+            label="리포트 발신"
+          />
         </div>
       </div>
+
+      {sendError && <p className="text-destructive text-sm">{sendError}</p>}
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Watchlist */}

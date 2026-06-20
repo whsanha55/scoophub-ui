@@ -67,6 +67,25 @@ export function StockReportCard({ report }: { report: StockReportSummarized }) {
             1σ Move: <span className="text-foreground font-medium">{report.expected_move_pct.toFixed(1)}%</span>
           </div>
         </div>
+        {(report.actionable_levels || report.hit_rate != null) && (
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground pt-1 border-t">
+            {report.actionable_levels?.target != null && (
+              <span>목표가: <span className="text-foreground font-medium">${report.actionable_levels.target.toFixed(2)}</span></span>
+            )}
+            {report.actionable_levels?.buy != null && (
+              <span>매수가: <span className="text-foreground font-medium text-green-500">${report.actionable_levels.buy.toFixed(2)}</span></span>
+            )}
+            {report.actionable_levels?.stop != null && (
+              <span>손절가: <span className="text-foreground font-medium text-red-500">${report.actionable_levels.stop.toFixed(2)}</span></span>
+            )}
+            {report.actionable_levels?.momentum != null && (
+              <span>모멘텀: <span className="text-foreground font-medium">{report.actionable_levels.momentum.toFixed(2)}</span></span>
+            )}
+            {report.hit_rate != null && (
+              <span>히트레이트: <span className="text-foreground font-medium">{(report.hit_rate > 1 ? report.hit_rate : report.hit_rate * 100).toFixed(0)}%</span></span>
+            )}
+          </div>
+        )}
         {report.is_stale && (
           <Badge variant="secondary" className="text-xs">
             Stale data
