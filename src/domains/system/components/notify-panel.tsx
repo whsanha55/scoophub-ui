@@ -52,12 +52,12 @@ const EMPTY_FORM: RouteForm = {
 function emptyRoute(form: RouteForm): NotifyRouteCreate {
   const topicIdRaw = form.topic_id.trim();
   return {
-    category: form.category.trim() || undefined,
-    purpose: form.purpose.trim() || undefined,
+    category: form.category.trim(),
+    purpose: form.purpose.trim(),
     channel: form.channel,
     chat_id: form.chat_id.trim(),
     topic_id: topicIdRaw === "" ? null : Number(topicIdRaw),
-    topic_name: form.topic_name.trim() || undefined,
+    topic_name: form.topic_name.trim(),
     enabled: form.enabled,
   };
 }
