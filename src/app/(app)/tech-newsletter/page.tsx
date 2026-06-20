@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useTechNewsletter, useTechNewsletterCrawl } from "@/domains/tech-newsletter/hooks/use-tech-newsletter";
 import { NewsletterCard } from "@/domains/tech-newsletter/components/newsletter-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
@@ -21,14 +22,7 @@ export default function TechNewsletterPage() {
 
   const [sort, setSort] = useState<SortValue>("published_at");
   const [newsletter, setNewsletter] = useState("");
-  const [debouncedNewsletter, setDebouncedNewsletter] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setDebouncedNewsletter(newsletter), 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [newsletter]);
+  const debouncedNewsletter = useDebouncedValue(newsletter);
 
   useEffect(() => {
     fetchArticles({

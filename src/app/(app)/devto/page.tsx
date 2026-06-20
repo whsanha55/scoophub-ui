@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useDevtoArticles, useDevtoCrawl } from "@/domains/devto/hooks/use-devto";
 import { DevtoCard } from "@/domains/devto/components/devto-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
@@ -23,14 +24,7 @@ export default function DevtoPage() {
   const [source, setSource] = useState<Source>("all");
   const [sort, setSort] = useState("published_at");
   const [tag, setTag] = useState("");
-  const [debouncedTag, setDebouncedTag] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setDebouncedTag(tag), 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [tag]);
+  const debouncedTag = useDebouncedValue(tag);
 
   useEffect(() => {
     fetchArticles({

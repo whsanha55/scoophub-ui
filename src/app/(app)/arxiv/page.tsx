@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useArxiv, useArxivCrawl } from "@/domains/arxiv/hooks/use-arxiv";
 import { ArxivCard } from "@/domains/arxiv/components/arxiv-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
@@ -21,14 +22,7 @@ export default function ArxivPage() {
 
   const [sort, setSort] = useState<Sort>("published_at");
   const [category, setCategory] = useState("");
-  const [debouncedCategory, setDebouncedCategory] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setDebouncedCategory(category), 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [category]);
+  const debouncedCategory = useDebouncedValue(category);
 
   useEffect(() => {
     fetchPapers({ category: debouncedCategory || undefined, sort, order: "desc", limit: 25 });
