@@ -1,12 +1,12 @@
 // #57 — 리포트 분석 기간 (백엔드 #147 연동)
 export type Timeframe = "1D" | "1W" | "1M";
 
-// #57 — 액션러블 레벨 (백엔드 스키마 미확정 → 전부 optional)
+// #59 — 액션러블 레벨 (백엔드 #149 확정 스키마 정합)
 export interface ActionableLevels {
-  target?: number;
-  buy?: number;
-  stop?: number;
-  momentum?: number;
+  target_price?: number | null; // 목표가 (+1σ)
+  buy_zone?: number | null; // 매수 구간 (-1σ or BB 하단)
+  stop_loss?: number | null; // 손절가 (price - 1.5×ATR)
+  momentum_fire?: boolean; // 불타기 진입
 }
 
 // #57 — watchlist 계층 분류 (백엔드 #147 연동, optional)
@@ -38,9 +38,10 @@ export interface StockReport {
   };
   data_date: string;
   is_stale: boolean;
-  // #57 — 액션러블 레벨/히트레이트 (백엔드 스키마 미확정 → optional)
-  actionable_levels?: ActionableLevels;
-  hit_rate?: number;
+  // #59 — 액션러블 레벨/히트레이트/그룹 (백엔드 #149 확정 스키마 정합)
+  actionable_levels?: ActionableLevels | null;
+  hit_rate?: number | null;
+  group?: string | null;
 }
 
 export interface StockReportSummarized {
@@ -59,9 +60,10 @@ export interface StockReportSummarized {
   expected_move_pct: number;
   data_date: string;
   is_stale: boolean;
-  // #57 — 액션러블 레벨/히트레이트 (백엔드 스키마 미확정 → optional)
-  actionable_levels?: ActionableLevels;
-  hit_rate?: number;
+  // #59 — 액션러블 레벨/히트레이트/그룹 (백엔드 #149 확정 스키마 정합)
+  actionable_levels?: ActionableLevels | null;
+  hit_rate?: number | null;
+  group?: string | null;
 }
 
 export interface SigmaData {
