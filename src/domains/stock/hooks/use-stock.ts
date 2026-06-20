@@ -13,6 +13,7 @@ import type {
   StockQuote,
   StockWem,
   StockAnalysis,
+  Timeframe,
 } from "../types";
 import type { ApiResponse } from "@/shared/types";
 
@@ -21,12 +22,13 @@ export function useStockReports() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReports = useCallback(async (tickers?: string) => {
+  const fetchReports = useCallback(async (tickers?: string, timeframe?: Timeframe) => {
     setLoading(true);
     setError(null);
     try {
       const sp = new URLSearchParams();
       if (tickers) sp.set("tickers", tickers);
+      if (timeframe) sp.set("timeframe", timeframe);
       const res = await fetch(`/api/stock/report?${sp.toString()}`);
       const data: ApiResponse<StockReport[]> = await res.json();
       if (data.success && data.data) {
@@ -49,12 +51,13 @@ export function useAllStockReports() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReports = useCallback(async (summarize = true) => {
+  const fetchReports = useCallback(async (summarize = true, timeframe?: Timeframe) => {
     setLoading(true);
     setError(null);
     try {
       const sp = new URLSearchParams();
       sp.set("summarize", String(summarize));
+      if (timeframe) sp.set("timeframe", timeframe);
       const res = await fetch(`/api/stock/report/all?${sp.toString()}`);
       const data: ApiResponse<StockReportSummarized[]> = await res.json();
       if (data.success && data.data) {
@@ -441,4 +444,33 @@ export function useStockRefreshWem() {
   }, []);
 
   return { loading, error, triggerRefreshWem };
+}
+
+// #57 — 리포트 온디맨드 발신 (super 전용 — UI에서 게이트)
+export function useStockReportSend() {
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ sent?: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const triggerSend = useCallback(async (tickers?: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const sp = new URLSearchParams();
+      if (tickers) sp.set("tickers", tickers);
+      const res = await fetch(`/api/stock/report/send?${sp.toString()}`, { method: "POST" });
+      const data: ApiResponse<{ sent?: number }> = await res.json();
+      if (data.success) {
+        setResult(data.data ?? null);
+      } else {
+        setError(data.error?.message || "Send failed");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { loading, result, error, triggerSend };
 }

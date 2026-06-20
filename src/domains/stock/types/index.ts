@@ -1,3 +1,17 @@
+// #57 — 리포트 분석 기간 (백엔드 #147 연동)
+export type Timeframe = "1D" | "1W" | "1M";
+
+// #57 — 액션러블 레벨 (백엔드 스키마 미확정 → 전부 optional)
+export interface ActionableLevels {
+  target?: number;
+  buy?: number;
+  stop?: number;
+  momentum?: number;
+}
+
+// #57 — watchlist 계층 분류 (백엔드 #147 연동, optional)
+export type WatchlistGroup = "market" | "sector" | "individual";
+
 export interface StockReport {
   ticker: string;
   exchange: string;
@@ -24,6 +38,9 @@ export interface StockReport {
   };
   data_date: string;
   is_stale: boolean;
+  // #57 — 액션러블 레벨/히트레이트 (백엔드 스키마 미확정 → optional)
+  actionable_levels?: ActionableLevels;
+  hit_rate?: number;
 }
 
 export interface StockReportSummarized {
@@ -42,6 +59,9 @@ export interface StockReportSummarized {
   expected_move_pct: number;
   data_date: string;
   is_stale: boolean;
+  // #57 — 액션러블 레벨/히트레이트 (백엔드 스키마 미확정 → optional)
+  actionable_levels?: ActionableLevels;
+  hit_rate?: number;
 }
 
 export interface SigmaData {
@@ -72,6 +92,8 @@ export interface WatchlistItem {
   memo: string;
   added_at: string;
   is_active: boolean;
+  // #57 — 계층 분류 (백엔드 #147 연동, optional)
+  group?: WatchlistGroup;
 }
 
 export interface WatchlistCreateInput {
@@ -79,11 +101,15 @@ export interface WatchlistCreateInput {
   exchange: string;
   name: string;
   memo?: string;
+  // #57 — 계층 분류 (optional)
+  group?: WatchlistGroup;
 }
 
 export interface WatchlistUpdateInput {
   memo?: string;
   is_active?: boolean;
+  // #57 — 계층 분류 (optional)
+  group?: WatchlistGroup;
 }
 
 export interface MarketStatus {

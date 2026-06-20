@@ -18,13 +18,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Trash2, Edit3 } from "lucide-react";
-import type { WatchlistItem, WatchlistCreateInput } from "../types";
+import type { WatchlistItem, WatchlistCreateInput, WatchlistUpdateInput, WatchlistGroup } from "../types";
+
+const GROUP_LABELS: Record<WatchlistGroup, string> = {
+  market: "시장",
+  sector: "섹터",
+  individual: "개별",
+};
 
 interface WatchlistPanelProps {
   items: WatchlistItem[];
   onAdd: (input: WatchlistCreateInput) => Promise<WatchlistItem | null>;
   onDelete: (id: string) => Promise<boolean>;
-  onUpdate: (id: string, input: { memo?: string; is_active?: boolean }) => Promise<WatchlistItem | null>;
+  onUpdate: (id: string, input: WatchlistUpdateInput) => Promise<WatchlistItem | null>;
   onTickerClick?: (ticker: string) => void;
 }
 
@@ -35,6 +41,7 @@ export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick
     exchange: "NAS",
     name: "",
     memo: "",
+    group: "individual",
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editMemo, setEditMemo] = useState("");
@@ -42,7 +49,7 @@ export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick
   const handleAdd = async () => {
     if (!form.ticker || !form.name) return;
     await onAdd(form);
-    setForm({ ticker: "", exchange: "NAS", name: "", memo: "" });
+    setForm({ ticker: "", exchange: "NAS", name: "", memo: "", group: "individual" });
     setOpen(false);
   };
 
@@ -89,6 +96,19 @@ export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick
                   </Button>
                 ))}
               </div>
+              <div className="flex gap-2">
+                {(["market", "sector", "individual"] as const).map((g) => (
+                  <Button
+                    key={g}
+                    size="sm"
+                    variant={form.group === g ? "default" : "outline"}
+                    onClick={() => setForm({ ...form, group: g })}
+                    className="cursor-pointer transition-colors duration-200"
+                  >
+                    {GROUP_LABELS[g]}
+                  </Button>
+                ))}
+              </div>
               <Input
                 placeholder="Memo (optional)"
                 value={form.memo}
@@ -129,6 +149,11 @@ export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick
                     <Badge variant="outline" className="text-xs">
                       {item.exchange}
                     </Badge>
+                    {item.group && (
+                      <Badge variant="secondary" className="text-xs">
+                        {GROUP_LABELS[item.group]}
+                      </Badge>
+                    )}
                     {!item.is_active && (
                       <Badge variant="secondary" className="text-xs">비활성</Badge>
                     )}
@@ -137,22 +162,37 @@ export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick
                     {item.name}
                   </span>
                   {editingId === item.id ? (
-                    <div className="flex gap-1 mt-1">
-                      <Input
-                        size={1}
-                        value={editMemo}
-                        onChange={(e) => setEditMemo(e.target.value)}
-                        className="h-7 text-xs"
-                        onKeyDown={(e) => e.key === "Enter" && handleUpdateMemo(item.id)}
-                      />
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleUpdateMemo(item.id)}
-                        className="h-7 cursor-pointer"
-                      >
-                        저장
-                      </Button>
+                    <div className="space-y-1 mt-1">
+                      <div className="flex gap-1">
+                        {(["market", "sector", "individual"] as const).map((g) => (
+                          <Button
+                            key={g}
+                            size="sm"
+                            variant={(item.group ?? "individual") === g ? "default" : "outline"}
+                            onClick={() => onUpdate(item.id, { group: g })}
+                            className="h-7 text-xs cursor-pointer transition-colors duration-200"
+                          >
+                            {GROUP_LABELS[g]}
+                          </Button>
+                        ))}
+                      </div>
+                      <div className="flex gap-1">
+                        <Input
+                          size={1}
+                          value={editMemo}
+                          onChange={(e) => setEditMemo(e.target.value)}
+                          className="h-7 text-xs"
+                          onKeyDown={(e) => e.key === "Enter" && handleUpdateMemo(item.id)}
+                        />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleUpdateMemo(item.id)}
+                          className="h-7 cursor-pointer"
+                        >
+                          저장
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     item.memo && (

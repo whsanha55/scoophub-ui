@@ -226,6 +226,49 @@ export default function StockDetailPage() {
         </CardContent>
       </Card>
 
+      {/* #57 — 액션러블 레벨 (optional, 레거시 호환) */}
+      {(report.actionable_levels || report.hit_rate != null) && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">액션러블 레벨</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+              {report.actionable_levels?.target != null && (
+                <div>
+                  <span className="text-muted-foreground">목표가</span>
+                  <p className="font-semibold">${report.actionable_levels.target.toFixed(2)}</p>
+                </div>
+              )}
+              {report.actionable_levels?.buy != null && (
+                <div>
+                  <span className="text-muted-foreground">매수가</span>
+                  <p className="font-semibold text-green-500">${report.actionable_levels.buy.toFixed(2)}</p>
+                </div>
+              )}
+              {report.actionable_levels?.stop != null && (
+                <div>
+                  <span className="text-muted-foreground">손절가</span>
+                  <p className="font-semibold text-red-500">${report.actionable_levels.stop.toFixed(2)}</p>
+                </div>
+              )}
+              {report.actionable_levels?.momentum != null && (
+                <div>
+                  <span className="text-muted-foreground">모멘텀</span>
+                  <p className="font-semibold">{report.actionable_levels.momentum.toFixed(2)}</p>
+                </div>
+              )}
+              {report.hit_rate != null && (
+                <div>
+                  <span className="text-muted-foreground">히트레이트</span>
+                  <p className="font-semibold">{(report.hit_rate > 1 ? report.hit_rate : report.hit_rate * 100).toFixed(0)}%</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Sigma Panel (detailed options data) */}
       {sigma && <SigmaPanel sigma={sigma} />}
 
