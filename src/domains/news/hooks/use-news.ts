@@ -64,7 +64,13 @@ export function useNewsArticle() {
     }
   }, []);
 
-  return { article, loading, error, fetchArticle };
+  // 기사 전환 시 이전 본문 잔류 방지용 reset.
+  const resetArticle = useCallback(() => {
+    setArticle(null);
+    setError(null);
+  }, []);
+
+  return { article, loading, error, fetchArticle, resetArticle };
 }
 
 export function useNewsCrawl() {

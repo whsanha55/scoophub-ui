@@ -3,22 +3,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart, MessageCircle, Clock, ExternalLink } from "lucide-react";
+import { parseJsonArray } from "@/lib/format";
 import type { DevtoArticle } from "../types";
 
 interface DevtoCardProps {
   article: DevtoArticle;
 }
 
-function parseTags(tags: string[] | string): string[] {
-  if (Array.isArray(tags)) return tags;
-  if (typeof tags === "string") {
-    try { return JSON.parse(tags); } catch { return []; }
-  }
-  return [];
-}
-
 export function DevtoCard({ article }: DevtoCardProps) {
-  const tags = parseTags(article.tags);
+  const tags = parseJsonArray(article.tags);
   return (
     <a
       href={article.url}

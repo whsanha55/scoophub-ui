@@ -7,21 +7,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { AUTH_COOKIE_NAME } from "@/shared/lib/auth-config";
 
 type Me = {
   email?: string;
   name?: string;
   is_super?: boolean;
 };
-
-// access_token 쿠키 존재 여부. HttpOnly 여부와 무관하게 이름으로 탐지.
-function hasTokenCookie(): boolean {
-  if (typeof document === "undefined") return false;
-  return document.cookie
-    .split("; ")
-    .some((c) => c.startsWith(`${AUTH_COOKIE_NAME}=`));
-}
 
 export function UserMenu() {
   const [me, setMe] = useState<Me | null>(null);
@@ -33,12 +24,9 @@ export function UserMenu() {
       .then(async (res) => {
         if (!active) return;
         if (res.status === 401) {
-          // 토큰 쿠키가 있는데 백엔드가 JWT를 거부 → 무효 토큰.
-          // logout으로 access_token 쿠키를 만료시킨 뒤 /login으로.
-          // (쿠키가 없는 진짜 비로그인은 user=null로 진입점 노출.)
-          if (hasTokenCookie()) {
-            window.location.href = "/api/auth/logout";
-          }
+          // 비로그인이거나 무효 토큰. access_token은 HttpOnly라
+          // document.cookie로 존재 여부를 알 수 없어 자동 정리 불가.
+          // user=null(비로그인)로 두어 Google 로그인 진입점 노출.
           return;
         }
         if (res.ok) {

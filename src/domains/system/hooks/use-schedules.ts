@@ -37,6 +37,7 @@ export function useSchedules() {
           body: JSON.stringify(patch),
         },
       );
+      if (!res.ok) throw new Error(`스케줄 업데이트 실패 (HTTP ${res.status})`);
       const data: ApiResponse<CrawlSchedule> = await res.json();
       if (data.success && data.data) {
         setSchedules((prev) =>

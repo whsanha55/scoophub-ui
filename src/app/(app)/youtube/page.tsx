@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useYouTubeTrending, useYouTubeTrendingCrawl } from "@/domains/youtube/hooks/use-youtube";
 import { YouTubeCard } from "@/domains/youtube/components/youtube-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
@@ -21,14 +22,7 @@ export default function YouTubeTrendingPage() {
 
   const [sort, setSort] = useState<SortValue>("view_count");
   const [channel, setChannel] = useState("");
-  const [debouncedChannel, setDebouncedChannel] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setDebouncedChannel(channel), 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [channel]);
+  const debouncedChannel = useDebouncedValue(channel);
 
   useEffect(() => {
     fetchVideos({ sort, order: "desc", channel: debouncedChannel || undefined, limit: 25 });

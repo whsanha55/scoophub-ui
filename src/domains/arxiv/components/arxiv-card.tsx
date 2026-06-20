@@ -3,18 +3,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExternalLink } from "lucide-react";
+import { parseJsonArray, formatRelativeDate } from "@/lib/format";
 import type { ArxivPaper } from "../types";
 
 interface ArxivCardProps {
   paper: ArxivPaper;
-}
-
-function parseArrayField(field: string[] | string | undefined): string[] {
-  if (Array.isArray(field)) return field;
-  if (typeof field === "string") {
-    try { return JSON.parse(field); } catch { return []; }
-  }
-  return [];
 }
 
 function formatAuthors(authors: string[]): string {
@@ -24,22 +17,9 @@ function formatAuthors(authors: string[]): string {
   return authors.join(", ");
 }
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return "오늘";
-  if (diffDays === 1) return "어제";
-  if (diffDays < 30) return `${diffDays}일 전`;
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)}개월 전`;
-  return `${Math.floor(diffDays / 365)}년 전`;
-}
-
 export function ArxivCard({ paper }: ArxivCardProps) {
-  const authors = parseArrayField(paper.authors);
-  const categories = parseArrayField(paper.categories);
+  const authors = parseJsonArray(paper.authors);
+  const categories = parseJsonArray(paper.categories);
   return (
     <a
       href={paper.url}
@@ -75,7 +55,7 @@ export function ArxivCard({ paper }: ArxivCardProps) {
           </div>
           )}
           <p className="text-xs text-muted-foreground">
-            {formatDate(paper.published_at)}
+            {formatRelativeDate(paper.published_at)}
           </p>
         </CardContent>
       </Card>

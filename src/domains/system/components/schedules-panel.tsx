@@ -50,7 +50,9 @@ export function SchedulesPanel() {
     setSaving(key(crawler, jobId));
     setActionError(null);
     try {
-      await patchSchedule(crawler, jobId, { interval_seconds: n, cron_expr: null });
+      // cron 기반 스케줄의 cron_expr을 사이드 이펙트로 지우지 않도록
+      // interval만 부분 patch. (UI에 cron 편집 입력란은 없음)
+      await patchSchedule(crawler, jobId, { interval_seconds: n });
       setEditing((prev) => {
         const next = { ...prev };
         delete next[key(crawler, jobId)];

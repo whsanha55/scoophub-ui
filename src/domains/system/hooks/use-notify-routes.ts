@@ -38,6 +38,7 @@ export function useNotifyRoutes() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
+    if (!res.ok) throw new Error(`발신 라우트 생성 실패 (HTTP ${res.status})`);
     const data: ApiResponse<NotifyRoute> = await res.json();
     if (data.success && data.data) {
       setRoutes((prev) => [...prev, data.data!]);
@@ -53,6 +54,7 @@ export function useNotifyRoutes() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
       });
+      if (!res.ok) throw new Error(`발신 라우트 업데이트 실패 (HTTP ${res.status})`);
       const data: ApiResponse<NotifyRoute> = await res.json();
       if (data.success && data.data) {
         setRoutes((prev) =>
@@ -69,6 +71,7 @@ export function useNotifyRoutes() {
     const res = await fetch(`/api/notify/routes/${routeId}`, {
       method: "DELETE",
     });
+    if (!res.ok) throw new Error(`발신 라우트 삭제 실패 (HTTP ${res.status})`);
     const data: ApiResponse<{ deleted: number }> = await res.json();
     if (data.success && data.data) {
       setRoutes((prev) => prev.filter((r) => r.id !== routeId));
@@ -81,6 +84,7 @@ export function useNotifyRoutes() {
     const res = await fetch(`/api/notify/routes/${routeId}/test`, {
       method: "POST",
     });
+    if (!res.ok) throw new Error(`발신 라우트 테스트 실패 (HTTP ${res.status})`);
     const data: ApiResponse<NotifyTestResult> = await res.json();
     if (data.success && data.data) {
       return data.data;

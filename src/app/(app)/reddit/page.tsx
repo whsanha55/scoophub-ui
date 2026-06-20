@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useReddit, useRedditCrawl } from "@/domains/reddit/hooks/use-reddit";
 import { RedditCard } from "@/domains/reddit/components/reddit-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
@@ -21,14 +22,7 @@ export default function RedditPage() {
 
   const [sort, setSort] = useState<Sort>("score");
   const [subreddit, setSubreddit] = useState("");
-  const [debouncedSubreddit, setDebouncedSubreddit] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setDebouncedSubreddit(subreddit), 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [subreddit]);
+  const debouncedSubreddit = useDebouncedValue(subreddit);
 
   useEffect(() => {
     fetchPosts({ subreddit: debouncedSubreddit || undefined, sort, order: "desc", limit: 25 });

@@ -3,22 +3,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowUp, MessageCircle, ExternalLink } from "lucide-react";
+import { parseJsonArray } from "@/lib/format";
 import type { ProductHuntPost } from "../types";
 
 interface ProductHuntCardProps {
   post: ProductHuntPost;
 }
 
-function parseTopics(topics: string[] | string | undefined): string[] {
-  if (Array.isArray(topics)) return topics;
-  if (typeof topics === "string") {
-    try { return JSON.parse(topics); } catch { return []; }
-  }
-  return [];
-}
-
 export function ProductHuntCard({ post }: ProductHuntCardProps) {
-  const topics = parseTopics(post.topics);
+  const topics = parseJsonArray(post.topics);
   return (
     <a
       href={post.url}

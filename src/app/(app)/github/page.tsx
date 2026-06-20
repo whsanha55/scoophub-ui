@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useGitHubTrending, useGitHubTrendingCrawl } from "@/domains/github/hooks/use-github-trending";
 import { GitHubTrendingCard } from "@/domains/github/components/github-trending-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
@@ -17,14 +18,7 @@ export default function GitHubTrendingPage() {
 
   const [period, setPeriod] = useState<Period>("daily");
   const [language, setLanguage] = useState("");
-  const [debouncedLanguage, setDebouncedLanguage] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setDebouncedLanguage(language), 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [language]);
+  const debouncedLanguage = useDebouncedValue(language);
 
   useEffect(() => {
     fetchTrending({ period, language: debouncedLanguage || undefined, limit: 25 });

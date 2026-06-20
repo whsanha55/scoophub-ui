@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useProductHunt, useProductHuntCrawl } from "@/domains/product-hunt/hooks/use-product-hunt";
 import { ProductHuntCard } from "@/domains/product-hunt/components/product-hunt-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
@@ -21,14 +22,7 @@ export default function ProductHuntPage() {
 
   const [sort, setSort] = useState<Sort>("votes_count");
   const [topic, setTopic] = useState("");
-  const [debouncedTopic, setDebouncedTopic] = useState("");
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setDebouncedTopic(topic), 300);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
-  }, [topic]);
+  const debouncedTopic = useDebouncedValue(topic);
 
   useEffect(() => {
     fetchPosts({ topic: debouncedTopic || undefined, sort, order: "desc", limit: 25 });
