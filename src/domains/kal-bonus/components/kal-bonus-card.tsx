@@ -83,9 +83,13 @@ export function KalBonusRouteCard({ item }: KalBonusRouteCardProps) {
             </thead>
             <tbody>
               {days.map((day) => {
-                const byCabin = new Map(
-                  day.flights.map((f) => [f.cabin_label, f.available]),
-                );
+                // 같은 cabin_label flight가 여러 개일 수 있음 —
+                // 하나라도 가용이면 ●, 모두 매진이면 ○. (이전: Map이 마지막 flight로 덮어씀)
+                const byCabin = new Map<string, boolean>();
+                for (const f of day.flights) {
+                  const prev = byCabin.get(f.cabin_label);
+                  byCabin.set(f.cabin_label, prev === undefined ? f.available : prev || f.available);
+                }
                 return (
                   <tr key={day.date} className="border-t border-border">
                     <td className="pr-2 py-1 font-medium whitespace-nowrap">

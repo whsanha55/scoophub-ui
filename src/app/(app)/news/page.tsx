@@ -20,7 +20,7 @@ function today(): string {
 
 export default function NewsPage() {
   const { articles, loading, total, fetchNews } = useNews();
-  const { article: selectedArticle, fetchArticle } = useNewsArticle();
+  const { article: selectedArticle, fetchArticle, resetArticle } = useNewsArticle();
   const { loading: crawlLoading, triggerCrawl } = useNewsCrawl();
   const { loading: retryLoading, triggerRetry } = useNewsSummarizeRetry();
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -31,6 +31,15 @@ export default function NewsPage() {
   const [dateTo, setDateTo] = useState(today);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  // 기사 전환/닫기 시 이전 본문 잔류 방지(fetch 완료 전 stale 본문 노출 차단).
+  const selectArticle = useCallback(
+    (id: number | null) => {
+      resetArticle();
+      setSelectedId(id);
+    },
+    [resetArticle],
+  );
 
   const loadNews = useCallback(() => {
     fetchNews({
@@ -74,7 +83,7 @@ export default function NewsPage() {
         <h1 className="text-2xl font-bold">뉴스</h1>
         <NewsDetail
           article={selectedArticle}
-          onBack={() => setSelectedId(null)}
+          onBack={() => selectArticle(null)}
         />
       </div>
     );
@@ -126,7 +135,7 @@ export default function NewsPage() {
               <NewsCard
                 key={article.id}
                 article={article}
-                onClick={(a: NewsArticle) => setSelectedId(a.id)}
+                onClick={(a: NewsArticle) => selectArticle(a.id)}
               />
             ))}
           </div>

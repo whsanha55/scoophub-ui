@@ -33,6 +33,7 @@ export function useCrawlConfig() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
     });
+    if (!res.ok) throw new Error(`설정 업데이트 실패 (HTTP ${res.status})`);
     const data: ApiResponse<CrawlConfigEntry> = await res.json();
     if (data.success && data.data) {
       setConfigs((prev) =>

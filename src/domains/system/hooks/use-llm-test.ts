@@ -21,6 +21,7 @@ export function useLlmTest() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      if (!res.ok) throw new Error(`LLM 테스트 실패 (HTTP ${res.status})`);
       const data: ApiResponse<LLMTestResponse> = await res.json();
       if (data.success && data.data) {
         setResponse(data.data.content);
