@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw } from "lucide-react";
@@ -26,14 +25,7 @@ export function HealthPanel() {
       </div>
 
       {loading && !health && (
-        <div className="space-y-3">
-          <Skeleton className="h-24 w-full" />
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
-          </div>
-        </div>
+        <Skeleton className="h-24 w-full" />
       )}
 
       {error && (
@@ -45,27 +37,11 @@ export function HealthPanel() {
       )}
 
       {health && (
-        <>
-          <div className="flex items-center gap-2">
-            <Badge variant={health.status === "ok" ? "default" : "destructive"}>
-              {health.status === "ok" ? "정상" : "오류"}
-            </Badge>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {Object.entries(health.total_records).map(([table, count]) => (
-              <Card key={table}>
-                <CardHeader className="pb-1">
-                  <CardTitle className="text-sm text-muted-foreground">{table}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xl font-semibold">{count.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">총 레코드 수</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </>
+        <div className="flex items-center gap-2">
+          <Badge variant={health.status === "ok" ? "default" : "destructive"}>
+            {health.status === "ok" ? "정상" : "오류"}
+          </Badge>
+        </div>
       )}
     </div>
   );

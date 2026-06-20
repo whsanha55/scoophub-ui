@@ -1,6 +1,5 @@
 export interface HealthData {
   status: "ok" | "error";
-  total_records: Record<string, number>;
 }
 
 export interface CrawlLog {
