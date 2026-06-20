@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2, LogOut, LogIn } from "lucide-react";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { AUTH_COOKIE_NAME } from "@/shared/lib/auth-config";
 
 type Me = {
   email?: string;
@@ -15,8 +15,15 @@ type Me = {
   is_super?: boolean;
 };
 
+// access_token 쿠키 존재 여부. HttpOnly 여부와 무관하게 이름으로 탐지.
+function hasTokenCookie(): boolean {
+  if (typeof document === "undefined") return false;
+  return document.cookie
+    .split("; ")
+    .some((c) => c.startsWith(`${AUTH_COOKIE_NAME}=`));
+}
+
 export function UserMenu() {
-  const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,18 +33,25 @@ export function UserMenu() {
       .then(async (res) => {
         if (!active) return;
         if (res.status === 401) {
-          // 쿠키는 있으나 백엔드가 JWT를 거부한 상태.
-          // /login으로 보내면 proxy가 (토큰 존재) → / 로 되돌려 무한루프.
-          // logout으로 보내 access_token 쿠키를 만료시킨 뒤 /login으로.
-          window.location.href = "/api/auth/logout";
-          return;
-        }
-        if (res.status === 403) {
-          router.replace("/forbidden");
+          // 토큰 쿠키가 있는데 백엔드가 JWT를 거부 → 무효 토큰.
+          // logout으로 access_token 쿠키를 만료시킨 뒤 /login으로.
+          // (쿠키가 없는 진짜 비로그인은 user=null로 진입점 노출.)
+          if (hasTokenCookie()) {
+            window.location.href = "/api/auth/logout";
+          }
           return;
         }
         if (res.ok) {
           setMe(await res.json());
+        } else if (res.status === 403) {
+          // 로그인은 됐으나 super 아님. 본문에 사용자 정보가 있으면 사용,
+          // 없어도 "로그인됨"으로 식별해 Google 로그인 진입점이 잘못 노출되지 않게.
+          try {
+            const body = await res.json();
+            setMe({ ...body, is_super: false });
+          } catch {
+            setMe({ is_super: false });
+          }
         }
       })
       .catch(() => {
@@ -47,7 +61,7 @@ export function UserMenu() {
     return () => {
       active = false;
     };
-  }, [router]);
+  }, []);
 
   if (loading) {
     return (
@@ -62,7 +76,24 @@ export function UserMenu() {
     );
   }
 
-  const label = me?.name || me?.email || "사용자";
+  // 비로그인 — Google 로그인 진입점 노출.
+  if (!me) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            render={<a href="/api/auth/login" />}
+            className="cursor-pointer"
+          >
+            <LogIn className="h-4 w-4" />
+            <span>Google로 로그인</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
+
+  const label = me.name || me.email || "사용자";
 
   return (
     <SidebarMenu>
@@ -70,7 +101,7 @@ export function UserMenu() {
         <SidebarMenuButton
           render={<a href="/api/auth/logout" />}
           className="cursor-pointer"
-          title={me?.email}
+          title={me.email}
         >
           <LogOut className="h-4 w-4" />
           <span className="truncate">{label}</span>

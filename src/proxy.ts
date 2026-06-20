@@ -3,7 +3,6 @@ import type { NextRequest } from "next/server";
 import {
   API_URL,
   AUTH_COOKIE_NAME,
-  PUBLIC_PAGES,
   API_REWRITE_EXCLUDE,
   API_TOKEN_EXCLUDE,
   API_COOKIE_PASSTHROUGH,
@@ -54,10 +53,8 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   };
 
-  const isPublic = PUBLIC_PAGES.includes(pathname);
-  if (!token && !isPublic) {
-    return redirectTo("/login");
-  }
+  // 비로그인도 (app) 페이지 조회 허용. mutation UI는 클라이언트에서
+  // is_super 상태로 게이트 (useAuth 훅). /api/* GET은 백엔드가 공개.
   // 이미 로그인한 사용자가 /login 접근 시 홈으로
   if (token && pathname === "/login") {
     return redirectTo("/");

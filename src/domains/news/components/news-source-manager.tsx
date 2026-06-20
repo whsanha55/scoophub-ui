@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Power, Trash2, Pencil, X, Check } from "lucide-react";
+import { useAuth } from "@/shared/hooks/use-auth";
 
 function EditRow({
   source,
@@ -75,11 +76,13 @@ function SourceRow({
   onToggle,
   onDelete,
   onEdit,
+  showActions,
 }: {
   source: NewsSource;
   onToggle: (source: NewsSource) => void;
   onDelete: (id: number) => void;
   onEdit: (source: NewsSource) => void;
+  showActions: boolean;
 }) {
   return (
     <tr className="border-b border-border transition-colors duration-150 hover:bg-muted/50">
@@ -92,43 +95,47 @@ function SourceRow({
           {source.active ? "활성" : "비활성"}
         </Badge>
       </td>
-      <td className="px-3 py-2 text-right">
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onToggle(source)}
-            className="h-8 w-8 p-0 cursor-pointer"
-            title={source.active ? "비활성화" : "활성화"}
-          >
-            <Power className={`h-4 w-4 ${source.active ? "text-green-500" : "text-muted-foreground"}`} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onEdit(source)}
-            className="h-8 w-8 p-0 cursor-pointer"
-            title="수정"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(source.id)}
-            className="h-8 w-8 p-0 cursor-pointer text-destructive hover:text-destructive"
-            title="삭제"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </td>
+      {showActions && (
+        <td className="px-3 py-2 text-right">
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggle(source)}
+              className="h-8 w-8 p-0 cursor-pointer"
+              title={source.active ? "비활성화" : "활성화"}
+            >
+              <Power className={`h-4 w-4 ${source.active ? "text-green-500" : "text-muted-foreground"}`} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(source)}
+              className="h-8 w-8 p-0 cursor-pointer"
+              title="수정"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(source.id)}
+              className="h-8 w-8 p-0 cursor-pointer text-destructive hover:text-destructive"
+              title="삭제"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </td>
+      )}
     </tr>
   );
 }
 
 export function NewsSourceManager() {
   const { sources, loading, error, fetchSources, addSource, updateSource, deleteSource } = useNewsSources();
+  const { user } = useAuth();
+  const isSuper = !!user?.is_super;
 
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
@@ -163,32 +170,34 @@ export function NewsSourceManager() {
 
   return (
     <div className="space-y-4">
-      {/* Add form */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-        <div className="flex-1">
-          <label className="mb-1 block text-xs text-muted-foreground">이름</label>
-          <Input
-            placeholder="소스 이름"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            aria-label="소스 이름"
-          />
+      {/* Add form — super만 */}
+      {isSuper && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <label className="mb-1 block text-xs text-muted-foreground">이름</label>
+            <Input
+              placeholder="소스 이름"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              aria-label="소스 이름"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="mb-1 block text-xs text-muted-foreground">URL</label>
+            <Input
+              placeholder="https://example.com/feed"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+              aria-label="소스 URL"
+            />
+          </div>
+          <Button onClick={handleAdd} disabled={!name.trim() || !url.trim()} className="cursor-pointer">
+            추가
+          </Button>
         </div>
-        <div className="flex-1">
-          <label className="mb-1 block text-xs text-muted-foreground">URL</label>
-          <Input
-            placeholder="https://example.com/feed"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            aria-label="소스 URL"
-          />
-        </div>
-        <Button onClick={handleAdd} disabled={!name.trim() || !url.trim()} className="cursor-pointer">
-          추가
-        </Button>
-      </div>
+      )}
 
       {error && (
         <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -211,7 +220,9 @@ export function NewsSourceManager() {
                 <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">이름</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">URL</th>
                 <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">상태</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">관리</th>
+                {isSuper && (
+                  <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">관리</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -230,6 +241,7 @@ export function NewsSourceManager() {
                     onToggle={handleToggle}
                     onDelete={handleDelete}
                     onEdit={(s) => setEditingId(s.id)}
+                    showActions={isSuper}
                   />
                 )
               )}
