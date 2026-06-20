@@ -15,34 +15,28 @@ export type AuthState = {
   loading: boolean;
 };
 
-// module-level 캐시. CrawlTriggerButton이 페이지마다 여러 개 렌더되므로
-// /api/auth/me 중복 호출을 단일 fetch로 공유. 첫 마운트 그룹이 1회만 호출.
-type Cache = { promise: Promise<AuthUser | null> } | { user: AuthUser | null };
-let cache: Cache | null = null;
+// 동시 마운트 dedupe만 수행. 결과를 영구 캐시하면 비로그인→로그인 전환 시
+// stale(null)이 남아 is_super이 갱신되지 않으므로, 완료 후 inflight만 해제.
+let inflight: Promise<AuthUser | null> | null = null;
 
 function fetchMe(): Promise<AuthUser | null> {
-  if (!cache) {
-    const promise = fetch("/api/auth/me")
-      .then(async (res) => {
-        if (res.ok) return (await res.json()) as AuthUser;
-        if (res.status === 403) return { is_super: false };
-        // 401 등은 비로그인.
-        return null;
-      })
-      .catch(() => null)
-      .finally(() => {
-        // 결과 캐시 — 이후 마운트는 재fetch 없이 동일 값.
-        cache = { user: null };
-      });
-    cache = { promise };
-  }
-  if ("promise" in cache) {
-    return cache.promise.then((user) => {
-      cache = { user };
-      return user;
+  if (inflight) return inflight;
+  inflight = fetch("/api/auth/me")
+    .then(async (res) => {
+      if (res.ok) {
+        // /api/auth/me는 ApiResponse({success, data})로 래핑. data 언랩.
+        const body = await res.json();
+        return (body?.data ?? null) as AuthUser | null;
+      }
+      if (res.status === 403) return { is_super: false };
+      // 401 등은 비로그인.
+      return null;
+    })
+    .catch(() => null)
+    .finally(() => {
+      inflight = null;
     });
-  }
-  return Promise.resolve(cache.user);
+  return inflight;
 }
 
 // /api/auth/me (백엔드 소유, proxy rewrite로 도달) 조회.
