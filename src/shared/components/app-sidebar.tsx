@@ -24,7 +24,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -40,6 +39,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
+import { useAuth } from "@/shared/hooks/use-auth";
 
 // 기술 트렌드 소스 — 테마 동일, 그룹으로 묶음.
 const techTrendItems = [
@@ -53,11 +53,11 @@ const techTrendItems = [
 ];
 
 const navItems = [
-  { title: "News", href: "/news", icon: Newspaper },
-  { title: "Stock", href: "/stock", icon: TrendingUp },
+  { title: "뉴스", href: "/news", icon: Newspaper },
+  { title: "주식", href: "/stock", icon: TrendingUp },
   { title: "대한항공 마일리지 좌석", href: "/kal-bonus", icon: Plane },
-  { title: "Weather", href: "/weather", icon: Cloud },
-  { title: "System", href: "/system", icon: Wrench },
+  { title: "날씨", href: "/weather", icon: Cloud },
+  { title: "시스템 관리", href: "/system", icon: Wrench },
 ];
 
 function AppSidebar() {
@@ -81,7 +81,6 @@ function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarMenu>
             {/* 기술 트렌드 — 접기/펼치기 서브 네비 */}
             <SidebarMenuItem>
@@ -152,6 +151,11 @@ function Header() {
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  // 비로그인(user=null, 확인 중 포함) → 사이드바/헤더 미노출, 본문만.
+  if (!user) {
+    return <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>;
+  }
   return (
     <SidebarProvider>
       <AppSidebar />
