@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { KalBonusItem } from "../types";
-import { CABIN_ORDER } from "../types";
+import { ARRIVAL_CITY, CABIN_ORDER } from "../types";
 
 interface KalBonusRouteCardProps {
   item: KalBonusItem;
@@ -45,15 +45,38 @@ export function KalBonusRouteCard({ item }: KalBonusRouteCardProps) {
     return { cabin, ok, total };
   });
 
+  // 모든 등급 합산 잔석 수 + 등급별 breakdown
+  const totalOk = summary.reduce((s, x) => s + x.ok, 0);
+  const breakdown = summary
+    .filter((s) => s.ok > 0)
+    .map((s) => `${CABIN_SHORT[s.cabin] ?? s.cabin} ${s.ok}`)
+    .join(" / ");
+  const cityName = ARRIVAL_CITY[parsed.arrival] ?? parsed.arrival;
+
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center justify-between gap-2">
-          <span className="flex items-center gap-2">
-            <span className="font-semibold">{parsed.departure}</span>
-            <span className="text-muted-foreground">→</span>
-            <span className="font-semibold">{parsed.arrival}</span>
+        <CardTitle className="text-base flex flex-col gap-1">
+          <span className="flex items-center justify-between gap-2">
+            <span className="flex items-center gap-2">
+              <span className="font-semibold">{parsed.departure}</span>
+              <span className="text-muted-foreground">→</span>
+              <span className="font-semibold">
+                {cityName}{" "}
+                <span className="text-muted-foreground font-normal">
+                  ({parsed.arrival})
+                </span>
+              </span>
+            </span>
+            <span className="text-sm font-semibold whitespace-nowrap">
+              {totalOk}석
+            </span>
           </span>
+          {breakdown && (
+            <span className="text-xs font-normal text-muted-foreground">
+              ({breakdown})
+            </span>
+          )}
           <div className="flex flex-wrap gap-1">
             {summary.map(({ cabin, ok, total }) => (
               <Badge
