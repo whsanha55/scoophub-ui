@@ -8,7 +8,7 @@ export async function GET() {
   return new Response(null, {
     status: 302,
     headers: {
-      Location: "/login",
+      Location: "/",
       "Set-Cookie": `${AUTH_COOKIE_NAME}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax`,
     },
   });
