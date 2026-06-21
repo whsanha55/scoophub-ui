@@ -101,13 +101,20 @@ export function WeatherWidget({ weather, compact = false }: WeatherWidgetProps) 
           <div className="mt-4">
             <p className="text-sm font-medium mb-2">주간 예보</p>
             <div className="grid grid-cols-3 gap-2 md:grid-cols-7">
-              {weather.weekly_forecast.map((day) => (
-                <div key={day.date} className="text-center text-xs p-2 rounded-lg bg-muted/50">
-                  <p className="font-medium">{day.date.slice(5)}</p>
-                  <p>{day.condition}</p>
-                  <p>{day.min_temp}°/{day.max_temp}°</p>
-                </div>
-              ))}
+              {weather.weekly_forecast.map((day) => {
+                const rainPct = day.hourly?.length
+                  ? Math.max(...day.hourly.map((h) => Number(h.chanceofrain) || 0))
+                  : 0;
+                const desc = day.hourly?.[0]?.weatherDesc?.[0]?.value ?? "";
+                return (
+                  <div key={day.date} className="text-center text-xs p-2 rounded-lg bg-muted/50">
+                    <p className="font-medium">{day.date.slice(5)}</p>
+                    <p>{desc}</p>
+                    <p>{day.mintempC}°/{day.maxtempC}°</p>
+                    {rainPct >= 30 && <p className="text-blue-500">비 {rainPct}%</p>}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
