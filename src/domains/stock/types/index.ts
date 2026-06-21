@@ -42,6 +42,8 @@ export interface StockReport {
   actionable_levels?: ActionableLevels | null;
   hit_rate?: number | null;
   group?: string | null;
+  // #82 — 단일 fetch 통합: 실시간 quote (백엔드 #168 정합)
+  quote?: StockQuote | null;
 }
 
 export interface StockReportSummarized {

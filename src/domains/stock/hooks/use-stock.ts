@@ -4,14 +4,11 @@ import { useState, useCallback } from "react";
 import type {
   StockReport,
   StockReportSummarized,
-  SigmaData,
   WatchlistItem,
   WatchlistCreateInput,
   WatchlistUpdateInput,
   MarketStatus,
   StockAnalyzeResult,
-  StockQuote,
-  StockWem,
   StockAnalysis,
   Timeframe,
 } from "../types";
@@ -73,32 +70,6 @@ export function useAllStockReports() {
   }, []);
 
   return { reports, loading, error, fetchReports };
-}
-
-export function useSigmaData() {
-  const [sigma, setSigma] = useState<SigmaData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchSigma = useCallback(async (ticker: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/stock/sigma?ticker=${encodeURIComponent(ticker)}`);
-      const data: ApiResponse<SigmaData> = await res.json();
-      if (data.success && data.data) {
-        setSigma(data.data);
-      } else {
-        setError(data.error?.message || "Failed to fetch sigma");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  return { sigma, loading, error, fetchSigma };
 }
 
 export function useWatchlist() {
@@ -284,22 +255,22 @@ export function useStockSync() {
   return { loading, error, triggerSync };
 }
 
-// #44 — 실시간 quote
-export function useStockQuote() {
-  const [quote, setQuote] = useState<StockQuote | null>(null);
+// #82 — 단일 fetch 통합: 티커 상세 (리포트 + quote)
+export function useStockDetail() {
+  const [detail, setDetail] = useState<StockReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchQuote = useCallback(async (ticker: string) => {
+  const fetchDetail = useCallback(async (ticker: string) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/stock/quote/${encodeURIComponent(ticker)}`);
-      const data: ApiResponse<StockQuote> = await res.json();
+      const res = await fetch(`/api/stock/detail/${encodeURIComponent(ticker)}`);
+      const data: ApiResponse<StockReport> = await res.json();
       if (data.success && data.data) {
-        setQuote(data.data);
+        setDetail(data.data);
       } else {
-        setError(data.error?.message || "Failed to fetch quote");
+        setError(data.error?.message || "Failed to fetch detail");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
@@ -308,36 +279,7 @@ export function useStockQuote() {
     }
   }, []);
 
-  return { quote, loading, error, fetchQuote };
-}
-
-// #44 — 주간 예상 움직임 (WEM)
-export function useStockWem() {
-  const [wem, setWem] = useState<StockWem | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchWem = useCallback(async (ticker: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `/api/stock/sigma/${encodeURIComponent(ticker)}/wem`,
-      );
-      const data: ApiResponse<StockWem> = await res.json();
-      if (data.success && data.data) {
-        setWem(data.data);
-      } else {
-        setError(data.error?.message || "Failed to fetch WEM");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  return { wem, loading, error, fetchWem };
+  return { detail, loading, error, fetchDetail };
 }
 
 // #44 — 분석 결과 (전체)
@@ -365,85 +307,6 @@ export function useStockAnalysis() {
   }, []);
 
   return { items, loading, error, fetchAnalysis };
-}
-
-// #44 — 최신 분석
-export function useStockAnalysisLatest() {
-  const [analysis, setAnalysis] = useState<StockAnalysis | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchLatest = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/stock/analysis/latest");
-      const data: ApiResponse<StockAnalysis> = await res.json();
-      if (data.success && data.data) {
-        setAnalysis(data.data);
-      } else {
-        setError(data.error?.message || "Failed to fetch latest analysis");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  return { analysis, loading, error, fetchLatest };
-}
-
-// #44 — Sigma 데이터 새로고침
-export function useStockRefreshSigma() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const triggerRefreshSigma = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/crawling/stock/refresh-sigma", {
-        method: "POST",
-      });
-      const data: ApiResponse<{ refreshed?: number }> = await res.json();
-      if (!data.success) {
-        setError(data.error?.message || "Sigma refresh failed");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  return { loading, error, triggerRefreshSigma };
-}
-
-// #44 — WEM 새로고침
-export function useStockRefreshWem() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const triggerRefreshWem = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/crawling/stock/refresh-wem", {
-        method: "POST",
-      });
-      const data: ApiResponse<{ refreshed?: number }> = await res.json();
-      if (!data.success) {
-        setError(data.error?.message || "WEM refresh failed");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  return { loading, error, triggerRefreshWem };
 }
 
 // #57 — 리포트 온디맨드 발신 (super 전용 — UI에서 게이트)
