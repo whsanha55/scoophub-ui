@@ -7,6 +7,8 @@ import { LlmTestPanel } from "@/domains/system/components/llm-test-panel";
 import { SchedulesPanel } from "@/domains/system/components/schedules-panel";
 import { ConfigPanel } from "@/domains/system/components/config-panel";
 import { NotifyPanel } from "@/domains/system/components/notify-panel";
+import { WatchlistPanel } from "@/domains/stock/components/watchlist-panel";
+import { NewsSourceManager } from "@/domains/news/components/news-source-manager";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { Loader2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,6 +62,8 @@ export default function SystemPage() {
           <TabsTrigger value="schedules">스케줄</TabsTrigger>
           <TabsTrigger value="config">config</TabsTrigger>
           <TabsTrigger value="notify">발신 라우팅</TabsTrigger>
+          <TabsTrigger value="watchlist">주식 테마</TabsTrigger>
+          <TabsTrigger value="news-sources">뉴스 소스</TabsTrigger>
         </TabsList>
         <TabsContent value="health">
           <HealthPanel />
@@ -78,6 +82,12 @@ export default function SystemPage() {
         </TabsContent>
         <TabsContent value="notify">
           <NotifyPanel />
+        </TabsContent>
+        <TabsContent value="watchlist">
+          <WatchlistPanel />
+        </TabsContent>
+        <TabsContent value="news-sources">
+          <NewsSourceManager />
         </TabsContent>
       </Tabs>
     </div>

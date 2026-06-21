@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   useAllStockReports,
-  useWatchlist,
-  useSigmaData,
   useStockAnalyze,
   useStockSigmaCrawl,
   useStockSigmaCompute,
@@ -15,8 +13,6 @@ import {
 } from "@/domains/stock/hooks/use-stock";
 import type { Timeframe } from "@/domains/stock/types";
 import { StockReportCard } from "@/domains/stock/components/stock-report-card";
-import { WatchlistPanel } from "@/domains/stock/components/watchlist-panel";
-import { SigmaPanel } from "@/domains/stock/components/sigma-panel";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,15 +20,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StockPage() {
   const { reports, loading: reportsLoading, fetchReports } = useAllStockReports();
-  const {
-    items: watchlist,
-    loading: watchlistLoading,
-    fetchWatchlist,
-    addItem,
-    deleteItem,
-    updateItem,
-  } = useWatchlist();
-  const { sigma, fetchSigma } = useSigmaData();
   const { loading: analyzeLoading, triggerAnalyze } = useStockAnalyze();
   const { loading: sigmaCrawlLoading, triggerSigmaCrawl } = useStockSigmaCrawl();
   const { loading: sigmaComputeLoading, triggerCompute } = useStockSigmaCompute();
@@ -40,14 +27,12 @@ export default function StockPage() {
   const { loading: sendLoading, error: sendError, triggerSend } =
     useStockReportSend();
   const { status: marketStatus, fetchStatus } = useMarketStatus();
-  const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
 
   useEffect(() => {
     fetchReports(true, timeframe);
-    fetchWatchlist();
     fetchStatus();
-  }, [fetchReports, fetchWatchlist, fetchStatus, timeframe]);
+  }, [fetchReports, fetchStatus, timeframe]);
 
   const handleAnalyze = async () => {
     await triggerAnalyze();
@@ -68,14 +53,6 @@ export default function StockPage() {
     await triggerSync();
     await fetchReports(true, timeframe);
   };
-
-  const handleTickerClick = async (ticker: string) => {
-    setSelectedTicker(ticker);
-    await fetchSigma(ticker);
-  };
-
-  // 티커 선택 시 sigma를 파생값으로 노출 (effect 내 setState 회피)
-  const selectedSigma = selectedTicker ? sigma : null;
 
   return (
     <div className="space-y-6">
@@ -130,47 +107,29 @@ export default function StockPage() {
 
       {sendError && <p className="text-destructive text-sm">{sendError}</p>}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Watchlist */}
-        <div className="lg:col-span-1">
-          <WatchlistPanel
-            items={watchlist}
-            onAdd={addItem}
-            onDelete={deleteItem}
-            onUpdate={updateItem}
-            onTickerClick={handleTickerClick}
-          />
+      {reportsLoading ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-36 rounded-xl" />
+          ))}
         </div>
-
-        {/* Reports + Sigma */}
-        <div className="lg:col-span-2 space-y-4">
-          {reportsLoading ? (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-36 rounded-xl" />
-              ))}
-            </div>
-          ) : reports.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
-              리포트가 없습니다. Watchlist에 종목을 추가하고 분석을 실행하세요.
-            </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {reports.map((report) => (
-                <Link
-                  key={report.ticker}
-                  href={`/stock/${report.ticker}`}
-                  className="block"
-                >
-                  <StockReportCard report={report} />
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {selectedSigma && <SigmaPanel sigma={selectedSigma} />}
+      ) : reports.length === 0 ? (
+        <div className="py-12 text-center text-muted-foreground">
+          리포트가 없습니다. 시스템 관리에서 Watchlist에 종목을 추가하고 분석을 실행하세요.
         </div>
-      </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {reports.map((report) => (
+            <Link
+              key={report.ticker}
+              href={`/stock/${report.ticker}`}
+              className="block"
+            >
+              <StockReportCard report={report} />
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

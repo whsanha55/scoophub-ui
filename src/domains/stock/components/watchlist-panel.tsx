@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -18,7 +18,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Trash2, Edit3 } from "lucide-react";
-import type { WatchlistItem, WatchlistCreateInput, WatchlistUpdateInput, WatchlistGroup } from "../types";
+import { useWatchlist } from "../hooks/use-stock";
+import type { WatchlistCreateInput, WatchlistGroup } from "../types";
 
 const GROUP_LABELS: Record<WatchlistGroup, string> = {
   market: "시장",
@@ -26,15 +27,9 @@ const GROUP_LABELS: Record<WatchlistGroup, string> = {
   individual: "개별",
 };
 
-interface WatchlistPanelProps {
-  items: WatchlistItem[];
-  onAdd: (input: WatchlistCreateInput) => Promise<WatchlistItem | null>;
-  onDelete: (id: string) => Promise<boolean>;
-  onUpdate: (id: string, input: WatchlistUpdateInput) => Promise<WatchlistItem | null>;
-  onTickerClick?: (ticker: string) => void;
-}
-
-export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick }: WatchlistPanelProps) {
+// 시스템 관리(super) 영역에서만 사용 — 관심종목(주식 테마) CRUD.
+export function WatchlistPanel() {
+  const { items, fetchWatchlist, addItem, deleteItem, updateItem } = useWatchlist();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<WatchlistCreateInput>({
     ticker: "",
@@ -46,15 +41,19 @@ export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editMemo, setEditMemo] = useState("");
 
+  useEffect(() => {
+    fetchWatchlist();
+  }, [fetchWatchlist]);
+
   const handleAdd = async () => {
     if (!form.ticker || !form.name) return;
-    await onAdd(form);
+    await addItem(form);
     setForm({ ticker: "", exchange: "NAS", name: "", memo: "", group: "individual" });
     setOpen(false);
   };
 
   const handleUpdateMemo = async (id: string) => {
-    await onUpdate(id, { memo: editMemo });
+    await updateItem(id, { memo: editMemo });
     setEditingId(null);
     setEditMemo("");
   };
@@ -140,10 +139,7 @@ export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick
               <div className="flex items-center gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`font-semibold ${onTickerClick ? "cursor-pointer hover:text-primary transition-colors duration-200" : ""}`}
-                      onClick={onTickerClick ? (e) => { e.stopPropagation(); onTickerClick(item.ticker); } : undefined}
-                    >
+                    <span className="font-semibold">
                       {item.ticker}
                     </span>
                     <Badge variant="outline" className="text-xs">
@@ -169,7 +165,7 @@ export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick
                             key={g}
                             size="sm"
                             variant={(item.group ?? "individual") === g ? "default" : "outline"}
-                            onClick={() => onUpdate(item.id, { group: g })}
+                            onClick={() => updateItem(item.id, { group: g })}
                             className="h-7 text-xs cursor-pointer transition-colors duration-200"
                           >
                             {GROUP_LABELS[g]}
@@ -216,7 +212,7 @@ export function WatchlistPanel({ items, onAdd, onDelete, onUpdate, onTickerClick
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => onDelete(item.id)}
+                  onClick={() => deleteItem(item.id)}
                   className="cursor-pointer text-destructive transition-colors duration-200 hover:text-destructive"
                 >
                   <Trash2 className="h-3.5 w-3.5" />

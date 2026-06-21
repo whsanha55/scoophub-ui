@@ -16,7 +16,6 @@ import {
   MessagesSquare,
   Play,
   Mail,
-  Library,
   Plane,
 } from "lucide-react";
 import {
@@ -40,7 +39,6 @@ import { UserMenu } from "./user-menu";
 const navItems = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "News", href: "/news", icon: Newspaper },
-  { title: "News Sources", href: "/news/sources", icon: Library },
   { title: "Stock", href: "/stock", icon: TrendingUp },
   { title: "GitHub", href: "/github", icon: Flame },
   { title: "arXiv", href: "/arxiv", icon: FileText },

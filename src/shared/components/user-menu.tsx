@@ -89,7 +89,11 @@ export function UserMenu() {
     <SidebarMenu>
       <SidebarMenuItem>
         <SidebarMenuButton
-          render={<a href="/api/auth/logout" />}
+          onClick={() => {
+            if (window.confirm("로그아웃하시겠어요?")) {
+              window.location.href = "/api/auth/logout";
+            }
+          }}
           className="cursor-pointer"
           title={me.email}
         >
