@@ -3,21 +3,14 @@
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import {
-  useStockReports,
-  useSigmaData,
-  useStockQuote,
-  useStockWem,
-  useStockAnalysisLatest,
-  useStockRefreshSigma,
-  useStockRefreshWem,
-} from "@/domains/stock/hooks/use-stock";
-import { SigmaPanel } from "@/domains/stock/components/sigma-panel";
+import { useStockDetail } from "@/domains/stock/hooks/use-stock";
+import { getIndicatorMeta } from "@/domains/stock/lib/indicators";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { ArrowLeft, RefreshCw, Info } from "lucide-react";
 
 function signalColor(signal: string): string {
   const s = signal.toUpperCase();
@@ -26,43 +19,45 @@ function signalColor(signal: string): string {
   return "text-yellow-500";
 }
 
+// #82 — 지표 label + 느낌표 툴팁 셀
+function IndicatorCell({ k, value }: { k: string; value: number }) {
+  const meta = getIndicatorMeta(k);
+  const label = meta?.label ?? k;
+  return (
+    <div className="rounded-lg border border-border p-2">
+      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+        {label}
+        {meta && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button type="button" aria-label={`${label} 설명`} className="cursor-help">
+                  <Info className="h-3 w-3 opacity-60" />
+                </button>
+              }
+            />
+            <TooltipContent>{meta.desc}</TooltipContent>
+          </Tooltip>
+        )}
+      </span>
+      <p className="font-semibold">{value.toFixed(typeof value === "number" && Math.abs(value) <= 2 ? 1 : 2)}</p>
+    </div>
+  );
+}
+
 export default function StockDetailPage() {
   const params = useParams<{ ticker: string }>();
   const ticker = params.ticker as string;
 
-  const { reports, loading, fetchReports } = useStockReports();
-  const { sigma, loading: sigmaLoading, fetchSigma } = useSigmaData();
-  const { quote, loading: quoteLoading, error: quoteError, fetchQuote } = useStockQuote();
-  const { wem, loading: wemLoading, error: wemError, fetchWem } = useStockWem();
-  const { analysis, loading: analysisLoading, error: analysisError, fetchLatest } =
-    useStockAnalysisLatest();
-  const { loading: refreshSigmaLoading, error: refreshSigmaError, triggerRefreshSigma } =
-    useStockRefreshSigma();
-  const { loading: refreshWemLoading, error: refreshWemError, triggerRefreshWem } =
-    useStockRefreshWem();
+  const { detail, loading, error, fetchDetail } = useStockDetail();
 
   useEffect(() => {
     if (ticker) {
-      fetchReports(ticker);
-      fetchSigma(ticker);
-      fetchQuote(ticker);
-      fetchWem(ticker);
-      fetchLatest();
+      fetchDetail(ticker);
     }
-  }, [ticker, fetchReports, fetchSigma, fetchQuote, fetchWem, fetchLatest]);
+  }, [ticker, fetchDetail]);
 
-  const handleRefreshSigma = async () => {
-    await triggerRefreshSigma();
-    fetchSigma(ticker);
-  };
-  const handleRefreshWem = async () => {
-    await triggerRefreshWem();
-    fetchWem(ticker);
-  };
-
-  const report = reports.length > 0 ? reports[0] : null;
-
-  if (loading) {
+  if (loading && !detail) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-10 w-48" />
@@ -72,7 +67,7 @@ export default function StockDetailPage() {
     );
   }
 
-  if (!report) {
+  if (!detail) {
     return (
       <div className="space-y-4">
         <Link href="/stock">
@@ -81,10 +76,16 @@ export default function StockDetailPage() {
             돌아가기
           </Button>
         </Link>
-        <p className="text-muted-foreground">리포트를 불러올 수 없습니다.</p>
+        <p className="text-muted-foreground">
+          {error ? error : "리포트를 불러올 수 없습니다."}
+        </p>
       </div>
     );
   }
+
+  const report = detail;
+  const quote = detail.quote ?? null;
+  const sigma = detail.sigma;
 
   const changeColor =
     report.change > 0
@@ -95,12 +96,24 @@ export default function StockDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/stock">
-        <Button variant="ghost" size="sm" className="cursor-pointer transition-colors duration-200">
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          돌아가기
+      <div className="flex items-center justify-between">
+        <Link href="/stock">
+          <Button variant="ghost" size="sm" className="cursor-pointer transition-colors duration-200">
+            <ArrowLeft className="mr-1 h-4 w-4" />
+            돌아가기
+          </Button>
+        </Link>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={loading}
+          onClick={() => fetchDetail(ticker)}
+          className="cursor-pointer transition-colors duration-200"
+        >
+          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
+          새로고침
         </Button>
-      </Link>
+      </div>
 
       {/* Header */}
       <div className="flex items-end justify-between">
@@ -140,21 +153,21 @@ export default function StockDetailPage() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             <div>
-              <span className="text-muted-foreground">Signal</span>
+              <span className="text-muted-foreground">시그널</span>
               <p className={`font-semibold ${signalColor(report.technical.signal)}`}>
                 {report.technical.signal}
               </p>
             </div>
             <div>
-              <span className="text-muted-foreground">Total Score</span>
+              <span className="text-muted-foreground">종합 점수</span>
               <p className="font-semibold">{report.technical.total_score.toFixed(1)}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Confidence</span>
+              <span className="text-muted-foreground">신뢰도</span>
               <p className="font-semibold">{report.technical.confidence.toFixed(1)}%</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Market Regime</span>
+              <span className="text-muted-foreground">시장 국면</span>
               <p className="font-semibold capitalize">{report.technical.market_regime}</p>
             </div>
           </div>
@@ -164,10 +177,7 @@ export default function StockDetailPage() {
             <p className="text-sm font-medium mb-2">기술적 지표 점수</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
               {Object.entries(report.technical.technical_scores).map(([key, value]) => (
-                <div key={key} className="rounded-lg border border-border p-2">
-                  <span className="text-xs text-muted-foreground">{key}</span>
-                  <p className="font-semibold">{typeof value === "number" ? value.toFixed(1) : String(value)}</p>
-                </div>
+                <IndicatorCell key={key} k={key} value={Number(value)} />
               ))}
             </div>
           </div>
@@ -176,12 +186,11 @@ export default function StockDetailPage() {
           <div>
             <p className="text-sm font-medium mb-2">기술적 상세</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
-              {Object.entries(report.technical.technical_details).filter(([, v]) => typeof v === "number").map(([key, value]) => (
-                <div key={key} className="rounded-lg border border-border p-2">
-                  <span className="text-xs text-muted-foreground">{key}</span>
-                  <p className="font-semibold">{(value as number).toFixed(2)}</p>
-                </div>
-              ))}
+              {Object.entries(report.technical.technical_details)
+                .filter(([, v]) => typeof v === "number")
+                .map(([key, value]) => (
+                  <IndicatorCell key={key} k={key} value={value as number} />
+                ))}
             </div>
           </div>
         </CardContent>
@@ -195,31 +204,31 @@ export default function StockDetailPage() {
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             <div>
-              <span className="text-muted-foreground">Position</span>
+              <span className="text-muted-foreground">위치</span>
               <p className="font-semibold capitalize">{report.sigma.sigma_position}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Signal</span>
+              <span className="text-muted-foreground">시그널</span>
               <p className="font-semibold capitalize">{report.sigma.sigma_signal}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Confidence</span>
+              <span className="text-muted-foreground">신뢰도</span>
               <p className="font-semibold">{(report.sigma.sigma_confidence * 100).toFixed(0)}%</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Expected Move</span>
+              <span className="text-muted-foreground">예상 변동폭</span>
               <p className="font-semibold">{report.sigma.expected_move_pct.toFixed(1)}%</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Expected High</span>
+              <span className="text-muted-foreground">예상 상한</span>
               <p className="font-semibold">${report.sigma.expected_move_high.toFixed(2)}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Expected Low</span>
+              <span className="text-muted-foreground">예상 하한</span>
               <p className="font-semibold">${report.sigma.expected_move_low.toFixed(2)}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Source</span>
+              <span className="text-muted-foreground">출처</span>
               <p className="font-semibold">{report.sigma.source}</p>
             </div>
           </div>
@@ -269,31 +278,13 @@ export default function StockDetailPage() {
         </Card>
       )}
 
-      {/* Sigma Panel (detailed options data) */}
-      {sigma && <SigmaPanel sigma={sigma} />}
-
-      {/* #44 — 실시간 Quote */}
+      {/* #82 — 실시간 Quote (detail.quote) */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center justify-between">
-            <span>실시간 주가</span>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={quoteLoading}
-              onClick={() => fetchQuote(ticker)}
-              className="cursor-pointer transition-colors duration-200"
-            >
-              <RefreshCw className={`h-4 w-4 mr-1 ${quoteLoading ? "animate-spin" : ""}`} />
-              새로고침
-            </Button>
-          </CardTitle>
+          <CardTitle className="text-lg">실시간 주가</CardTitle>
         </CardHeader>
         <CardContent>
-          {quoteError && <p className="text-destructive text-sm">{quoteError}</p>}
-          {!quote && !quoteLoading && !quoteError && (
-            <p className="text-muted-foreground text-sm">실시간 quote를 불러올 수 없습니다.</p>
-          )}
+          {!quote && <p className="text-muted-foreground text-sm">실시간 quote를 불러올 수 없습니다.</p>}
           {quote && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
               <div>
@@ -332,132 +323,59 @@ export default function StockDetailPage() {
         </CardContent>
       </Card>
 
-      {/* #44 — WEM (주간 예상 움직임) */}
+      {/* #82 — WEM (detail.sigma의 expected_move) */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center justify-between">
-            <span>주간 예상 움직임 (WEM)</span>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={refreshWemLoading || wemLoading}
-              onClick={handleRefreshWem}
-              className="cursor-pointer transition-colors duration-200"
-            >
-              <RefreshCw
-                className={`h-4 w-4 mr-1 ${refreshWemLoading ? "animate-spin" : ""}`}
-              />
-              WEM 새로고침
-            </Button>
-          </CardTitle>
+          <CardTitle className="text-lg">주간 예상 움직임 (WEM)</CardTitle>
         </CardHeader>
         <CardContent>
-          {(wemError || refreshWemError) && (
-            <p className="text-destructive text-sm">{wemError || refreshWemError}</p>
-          )}
-          {!wem && !wemLoading && !wemError && (
-            <p className="text-muted-foreground text-sm">WEM 데이터가 없습니다.</p>
-          )}
-          {wem && (
+          {!sigma && <p className="text-muted-foreground text-sm">WEM 데이터가 없습니다.</p>}
+          {sigma && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
               <div>
-                <span className="text-muted-foreground">예상 High</span>
-                <p className="font-semibold text-green-500">${wem.expected_move_high.toFixed(2)}</p>
+                <span className="text-muted-foreground">예상 상한</span>
+                <p className="font-semibold text-green-500">${sigma.expected_move_high.toFixed(2)}</p>
               </div>
               <div>
-                <span className="text-muted-foreground">예상 Low</span>
-                <p className="font-semibold text-red-500">${wem.expected_move_low.toFixed(2)}</p>
+                <span className="text-muted-foreground">예상 하한</span>
+                <p className="font-semibold text-red-500">${sigma.expected_move_low.toFixed(2)}</p>
               </div>
               <div>
                 <span className="text-muted-foreground">예상 변동폭</span>
-                <p className="font-semibold">{wem.expected_move_pct.toFixed(1)}%</p>
+                <p className="font-semibold">{sigma.expected_move_pct.toFixed(1)}%</p>
               </div>
-              {wem.expiry_date && (
-                <div>
-                  <span className="text-muted-foreground">기준 만기</span>
-                  <p className="font-semibold">{wem.expiry_date}</p>
-                </div>
-              )}
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* #44 — Sigma 새로고침 */}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={refreshSigmaLoading}
-          onClick={handleRefreshSigma}
-          className="cursor-pointer transition-colors duration-200"
-        >
-          <RefreshCw
-            className={`h-4 w-4 mr-1 ${refreshSigmaLoading ? "animate-spin" : ""}`}
-          />
-          Sigma 새로고침
-        </Button>
-        {refreshSigmaError && (
-          <span className="text-destructive text-sm self-center">{refreshSigmaError}</span>
-        )}
-      </div>
-
-      {/* #44 — 분석 결과 */}
+      {/* 분석 (detail 자체가 분석 리포트) */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center justify-between">
-            <span>분석</span>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={analysisLoading}
-              onClick={fetchLatest}
-              className="cursor-pointer transition-colors duration-200"
-            >
-              <RefreshCw className={`h-4 w-4 mr-1 ${analysisLoading ? "animate-spin" : ""}`} />
-              새로고침
-            </Button>
-          </CardTitle>
+          <CardTitle className="text-lg">분석</CardTitle>
         </CardHeader>
         <CardContent>
-          {analysisError && <p className="text-destructive text-sm">{analysisError}</p>}
-          {!analysis && !analysisLoading && !analysisError && (
-            <p className="text-muted-foreground text-sm">분석 결과가 없습니다.</p>
-          )}
-          {analysis && (
-            <div className="space-y-2 text-sm">
-              {analysis.signal && (
-                <p>
-                  <span className="text-muted-foreground">Signal: </span>
-                  <span className={`font-semibold ${signalColor(analysis.signal)}`}>
-                    {analysis.signal}
-                  </span>
-                </p>
-              )}
-              {analysis.score != null && (
-                <p>
-                  <span className="text-muted-foreground">Score: </span>
-                  <span className="font-semibold">{analysis.score}</span>
-                </p>
-              )}
-              {analysis.summary && (
-                <p className="text-muted-foreground whitespace-pre-wrap">{analysis.summary}</p>
-              )}
-              {analysis.recommendation && (
-                <p className="text-muted-foreground">추천: {analysis.recommendation}</p>
-              )}
-              {analysis.data_date && (
-                <p className="text-xs text-muted-foreground">기준일: {analysis.data_date}</p>
-              )}
-            </div>
-          )}
+          <div className="space-y-2 text-sm">
+            <p>
+              <span className="text-muted-foreground">시그널: </span>
+              <span className={`font-semibold ${signalColor(report.technical.signal)}`}>
+                {report.technical.signal}
+              </span>
+            </p>
+            <p>
+              <span className="text-muted-foreground">종합 점수: </span>
+              <span className="font-semibold">{report.technical.total_score}</span>
+            </p>
+            {report.data_date && (
+              <p className="text-xs text-muted-foreground">기준일: {report.data_date}</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
       {/* Meta */}
       <div className="text-xs text-muted-foreground">
         데이터 기준일: {report.data_date}
-        {sigmaLoading && <span className="ml-2">(시그마 데이터 로딩 중...)</span>}
       </div>
     </div>
   );
