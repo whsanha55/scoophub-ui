@@ -39,6 +39,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
+import { useAuth } from "@/shared/hooks/use-auth";
 
 // 기술 트렌드 소스 — 테마 동일, 그룹으로 묶음.
 const techTrendItems = [
@@ -61,12 +62,17 @@ const navItems = [
 
 function AppSidebar() {
   const pathname = usePathname();
+  // 비로그인(user=null)은 '시스템 관리'만 숨김. 나머지 항목은 노출.
+  const { user } = useAuth();
   // 현재 경로가 그룹 하위면 항상 펼침. 그 외는 사용자 토글 존중.
   const isGroupActive = techTrendItems.some((item) =>
     pathname.startsWith(item.href),
   );
   const [userOpen, setUserOpen] = useState(false);
   const groupOpen = isGroupActive || userOpen;
+  const visibleNavItems = navItems.filter(
+    (item) => item.href !== "/system" || user,
+  );
 
   return (
     <Sidebar>
@@ -116,7 +122,7 @@ function AppSidebar() {
               )}
             </SidebarMenuItem>
 
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
                   render={<Link href={item.href} />}
