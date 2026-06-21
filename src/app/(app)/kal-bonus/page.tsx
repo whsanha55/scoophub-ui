@@ -6,11 +6,6 @@ import { Button } from "@/components/ui/button";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
 import { useKalBonus, useKalBonusCrawl } from "@/domains/kal-bonus/hooks/use-kal-bonus";
 import { KalBonusRouteCard } from "@/domains/kal-bonus/components/kal-bonus-card";
-import type { KalBonusItem } from "@/domains/kal-bonus/types";
-
-function monthKey(item: KalBonusItem): string {
-  return item.key.split("-")[0];
-}
 
 function fmtMonth(yyyymm: string): string {
   if (yyyymm.length !== 6) return yyyymm;
@@ -18,42 +13,40 @@ function fmtMonth(yyyymm: string): string {
 }
 
 export default function KalBonusPage() {
-  const { items, loading, error, fetchKalBonus } = useKalBonus();
+  const { months, items, loading, error, fetchMonths, fetchByMonth } = useKalBonus();
   const { loading: crawlLoading, error: crawlError, triggerCrawl } = useKalBonusCrawl();
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [activeMonth, setActiveMonth] = useState<string | null>(null);
 
+  // 첫 로딩: 월 목록 → 최신 월(오름차순 끝) 데이터
   useEffect(() => {
-    fetchKalBonus();
-  }, [fetchKalBonus]);
+    (async () => {
+      const ms = await fetchMonths();
+      if (ms.length > 0) {
+        const latest = ms[ms.length - 1];
+        setActiveMonth(latest);
+        await fetchByMonth(latest);
+      }
+    })();
+    // ponytail: 최초 1회 로드. fetchMonths/fetchByMonth는 useCallback 안정.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // 월별 그룹 (오름차순 정렬 — 끝 요소가 최신 월)
-  const grouped = useMemo(() => {
-    const map = new Map<string, KalBonusItem[]>();
-    (items ?? []).forEach((it) => {
-      const k = monthKey(it);
-      const arr = map.get(k) ?? [];
-      arr.push(it);
-      map.set(k, arr);
-    });
-    return [...map.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([k, list]) => ({
-        month: k,
-        label: fmtMonth(k),
-        routes: list.sort((a, b) =>
-          (a.parsed?.arrival ?? "").localeCompare(b.parsed?.arrival ?? ""),
-        ),
-      }));
-  }, [items]);
+  const handleSelectMonth = async (ym: string) => {
+    setActiveMonth(ym);
+    await fetchByMonth(ym);
+  };
 
-  // 파생값: 미선택 시 최신 월(오름차순 끝)로 자동 폴백.
-  // useState 초기값 대신 파생값을 쓰는 이유 — 첫 렌더엔 items가 비어 grouped가 빈 배열이라
-  // useState lazy initializer가 null로 고정되는 버그를 피하기 위해.
-  const activeMonth = selectedMonth ?? grouped[grouped.length - 1]?.month ?? null;
-  const activeRoutes =
-    grouped.find((g) => g.month === activeMonth)?.routes ?? [];
+  // 활성 월 카드 — arrival 오름차순
+  const routes = useMemo(
+    () =>
+      (items ?? [])
+        .filter((it) => it.key.startsWith(activeMonth ?? ""))
+        .slice()
+        .sort((a, b) => (a.parsed?.arrival ?? "").localeCompare(b.parsed?.arrival ?? "")),
+    [items, activeMonth],
+  );
 
-  // 전체 items 중 가장 최근 크롤(업데이트) 시각 — 페이지 상단에 노출
+  // 현재 월 items 중 가장 최근 크롤 시각
   const lastCrawledAt = useMemo(() => {
     const latest = (items ?? [])
       .map((it) => it.updated_at)
@@ -101,20 +94,20 @@ export default function KalBonusPage() {
       {error && <p className="text-destructive text-sm">{error}</p>}
 
       {/* 월 탭 (가로 스크롤) */}
-      {!loading && grouped.length > 0 && (
+      {!loading && months && months.length > 0 && (
         <div className="overflow-x-auto -mx-1 px-1">
           <div className="flex gap-2 w-max pb-1">
-            {grouped.map((g) => {
-              const active = g.month === activeMonth;
+            {months.map((ym) => {
+              const active = ym === activeMonth;
               return (
                 <Button
-                  key={g.month}
+                  key={ym}
                   variant={active ? "default" : "secondary"}
                   size="sm"
-                  onClick={() => setSelectedMonth(g.month)}
+                  onClick={() => handleSelectMonth(ym)}
                   className="cursor-pointer whitespace-nowrap"
                 >
-                  {g.label}
+                  {fmtMonth(ym)}
                 </Button>
               );
             })}
@@ -129,13 +122,13 @@ export default function KalBonusPage() {
         </div>
       )}
 
-      {!loading && !error && grouped.length === 0 && (
+      {!loading && !error && routes.length === 0 && (
         <p className="text-muted-foreground text-sm">데이터가 없습니다.</p>
       )}
 
-      {!loading && activeRoutes.length > 0 && (
+      {!loading && routes.length > 0 && (
         <div className="grid gap-3 md:grid-cols-2">
-          {activeRoutes.map((item) => (
+          {routes.map((item) => (
             <KalBonusRouteCard key={item.key} item={item} />
           ))}
         </div>
