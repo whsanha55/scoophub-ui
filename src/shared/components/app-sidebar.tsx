@@ -39,7 +39,6 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 import { UserMenu } from "./user-menu";
-import { useAuth } from "@/shared/hooks/use-auth";
 
 // 기술 트렌드 소스 — 테마 동일, 그룹으로 묶음.
 const techTrendItems = [
@@ -151,11 +150,6 @@ function Header() {
 }
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  // 비로그인(user=null, 확인 중 포함) → 사이드바/헤더 미노출, 본문만.
-  if (!user) {
-    return <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>;
-  }
   return (
     <SidebarProvider>
       <AppSidebar />
