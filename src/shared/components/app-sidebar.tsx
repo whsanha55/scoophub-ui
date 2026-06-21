@@ -46,7 +46,7 @@ const navItems = [
   { title: "Product Hunt", href: "/product-hunt", icon: Rocket },
   { title: "YouTube", href: "/youtube", icon: Play },
   { title: "Newsletter", href: "/tech-newsletter", icon: Mail },
-  { title: "KAL 보너스", href: "/kal-bonus", icon: Plane },
+  { title: "대한항공 마일리지 좌석", href: "/kal-bonus", icon: Plane },
   { title: "Weather", href: "/weather", icon: Cloud },
   { title: "System", href: "/system", icon: Wrench },
 ];
