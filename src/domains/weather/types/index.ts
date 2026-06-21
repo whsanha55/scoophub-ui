@@ -21,10 +21,17 @@ export interface WeatherData {
   raw_json: Record<string, unknown>;
 }
 
+// weekly_forecast 아이템 = wttr.in 일자별 스키마 (notify card.py _enrich_weather 소비 형식과 동일).
 export interface DailyForecast {
   date: string;
-  max_temp: number;
-  min_temp: number;
-  condition: string;
-  rain_chance: number;
+  maxtempC: string;
+  mintempC: string;
+  hourly?: WeatherHourly[];
+}
+
+export interface WeatherHourly {
+  time?: string;
+  chanceofrain?: string;
+  weatherCode?: string;
+  weatherDesc?: { value: string }[];
 }
