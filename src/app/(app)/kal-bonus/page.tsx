@@ -53,10 +53,34 @@ export default function KalBonusPage() {
   const activeRoutes =
     grouped.find((g) => g.month === activeMonth)?.routes ?? [];
 
+  // 전체 items 중 가장 최근 크롤(업데이트) 시각 — 페이지 상단에 노출
+  const lastCrawledAt = useMemo(() => {
+    const latest = (items ?? [])
+      .map((it) => it.updated_at)
+      .filter(Boolean)
+      .sort()
+      .at(-1);
+    if (!latest) return null;
+    return new Date(latest).toLocaleString("ko-KR", {
+      timeZone: "Asia/Seoul",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }, [items]);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">대한항공 마일리지 좌석</h1>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col gap-0.5">
+          <h1 className="text-2xl font-bold">대한항공 마일리지 좌석</h1>
+          {lastCrawledAt && (
+            <span className="text-xs text-muted-foreground">
+              마지막 크롤: {lastCrawledAt}
+            </span>
+          )}
+        </div>
         <CrawlTriggerButton onClick={triggerCrawl} loading={crawlLoading} label="수동 크롤" />
       </div>
 
