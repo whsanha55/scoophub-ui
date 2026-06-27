@@ -66,6 +66,9 @@ export interface StockReportSummarized {
   actionable_levels?: ActionableLevels | null;
   hit_rate?: number | null;
   group?: string | null;
+  // #84 — 다기간 시그널 (1W/1M, 다기간 fetch 후 병합)
+  signal_1w?: string | null;
+  signal_1m?: string | null;
 }
 
 export interface SigmaData {
