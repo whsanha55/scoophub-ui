@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import {
-  useAllStockReports,
+  useAllStockReportsMulti,
   useStockAnalyze,
   useStockSigmaCrawl,
   useStockSigmaCompute,
@@ -11,15 +11,13 @@ import {
   useMarketStatus,
   useStockReportSend,
 } from "@/domains/stock/hooks/use-stock";
-import type { Timeframe } from "@/domains/stock/types";
 import { StockReportCard } from "@/domains/stock/components/stock-report-card";
 import { CrawlTriggerButton } from "@/domains/news/components/crawl-trigger-button";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StockPage() {
-  const { reports, loading: reportsLoading, fetchReports } = useAllStockReports();
+  const { reports, loading: reportsLoading, fetchReports } = useAllStockReportsMulti();
   const { loading: analyzeLoading, triggerAnalyze } = useStockAnalyze();
   const { loading: sigmaCrawlLoading, triggerSigmaCrawl } = useStockSigmaCrawl();
   const { loading: sigmaComputeLoading, triggerCompute } = useStockSigmaCompute();
@@ -27,31 +25,30 @@ export default function StockPage() {
   const { loading: sendLoading, error: sendError, triggerSend } =
     useStockReportSend();
   const { status: marketStatus, fetchStatus } = useMarketStatus();
-  const [timeframe, setTimeframe] = useState<Timeframe>("1D");
 
   useEffect(() => {
-    fetchReports(true, timeframe);
+    fetchReports(true);
     fetchStatus();
-  }, [fetchReports, fetchStatus, timeframe]);
+  }, [fetchReports, fetchStatus]);
 
   const handleAnalyze = async () => {
     await triggerAnalyze();
-    await fetchReports(true, timeframe);
+    await fetchReports(true);
   };
 
   const handleSigmaCrawl = async () => {
     await triggerSigmaCrawl();
-    await fetchReports(true, timeframe);
+    await fetchReports(true);
   };
 
   const handleSigmaCompute = async () => {
     await triggerCompute();
-    await fetchReports(true, timeframe);
+    await fetchReports(true);
   };
 
   const handleSync = async () => {
     await triggerSync();
-    await fetchReports(true, timeframe);
+    await fetchReports(true);
   };
 
   return (
@@ -59,19 +56,6 @@ export default function StockPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold">주식</h1>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            {(["1D", "1W", "1M"] as const).map((tf) => (
-              <Button
-                key={tf}
-                size="sm"
-                variant={timeframe === tf ? "default" : "outline"}
-                onClick={() => setTimeframe(tf)}
-                className="cursor-pointer transition-colors duration-200"
-              >
-                {tf}
-              </Button>
-            ))}
-          </div>
           {marketStatus && (
             <Badge variant={marketStatus.is_open ? "default" : "secondary"}>
               {marketStatus.is_open ? "장 열림" : "장 닫힘"}

@@ -10,13 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { ArrowLeft, RefreshCw, Info } from "lucide-react";
+import { ArrowLeft, RefreshCw, Info, Flame } from "lucide-react";
 
-function signalColor(signal: string): string {
+function signalStyle(signal: string): { variant: "default" | "outline" | "secondary"; className: string } {
   const s = signal.toUpperCase();
-  if (s === "BUY" || s === "STRONG_BUY") return "text-green-500";
-  if (s === "SELL" || s === "STRONG_SELL") return "text-red-500";
-  return "text-yellow-500";
+  if (s === "STRONG_BUY") return { variant: "default", className: "bg-green-500 hover:bg-green-500 text-white border-green-500" };
+  if (s === "BUY") return { variant: "outline", className: "text-green-500 border-green-500" };
+  if (s === "STRONG_SELL") return { variant: "default", className: "bg-red-500 hover:bg-red-500 text-white border-red-500" };
+  if (s === "SELL") return { variant: "outline", className: "text-red-500 border-red-500" };
+  return { variant: "secondary", className: "text-yellow-500" };
 }
 
 // #82 — 지표 label + 느낌표 툴팁 셀
@@ -133,12 +135,14 @@ export default function StockDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge
-            variant="outline"
-            className={`${signalColor(report.technical.signal)} text-xs`}
-          >
-            {report.technical.signal}
-          </Badge>
+          {(() => {
+            const st = signalStyle(report.technical.signal);
+            return (
+              <Badge variant={st.variant} className={`text-xs ${st.className}`}>
+                {report.technical.signal}
+              </Badge>
+            );
+          })()}
           {report.is_stale && (
             <Badge variant="secondary" className="text-xs">Stale data</Badge>
           )}
@@ -154,9 +158,14 @@ export default function StockDetailPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             <div>
               <span className="text-muted-foreground">시그널</span>
-              <p className={`font-semibold ${signalColor(report.technical.signal)}`}>
-                {report.technical.signal}
-              </p>
+              {(() => {
+                const st = signalStyle(report.technical.signal);
+                return (
+                  <p className={`font-semibold ${st.className}`}>
+                    {report.technical.signal}
+                  </p>
+                );
+              })()}
             </div>
             <div>
               <span className="text-muted-foreground">종합 점수</span>
@@ -164,7 +173,13 @@ export default function StockDetailPage() {
             </div>
             <div>
               <span className="text-muted-foreground">신뢰도</span>
-              <p className="font-semibold">{report.technical.confidence.toFixed(1)}%</p>
+              <div className="h-2 mt-1 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full ${report.technical.confidence >= 70 ? "bg-green-500" : report.technical.confidence >= 40 ? "bg-yellow-500" : "bg-red-500"}`}
+                  style={{ width: `${Math.min(Math.max(report.technical.confidence, 0), 100)}%` }}
+                />
+              </div>
+              <p className="text-xs mt-0.5 font-medium">{report.technical.confidence.toFixed(1)}%</p>
             </div>
             <div>
               <span className="text-muted-foreground">시장 국면</span>
@@ -264,7 +279,7 @@ export default function StockDetailPage() {
               {report.actionable_levels?.momentum_fire && (
                 <div>
                   <span className="text-muted-foreground">불타기</span>
-                  <p className="font-semibold text-orange-500">진입</p>
+                  <p className="font-semibold text-orange-500 inline-flex items-center gap-1"><Flame className="h-3 w-3" aria-hidden="true" />진입</p>
                 </div>
               )}
               {report.hit_rate != null && (
@@ -358,9 +373,14 @@ export default function StockDetailPage() {
           <div className="space-y-2 text-sm">
             <p>
               <span className="text-muted-foreground">시그널: </span>
-              <span className={`font-semibold ${signalColor(report.technical.signal)}`}>
-                {report.technical.signal}
-              </span>
+              {(() => {
+                const st = signalStyle(report.technical.signal);
+                return (
+                  <span className={`font-semibold ${st.className}`}>
+                    {report.technical.signal}
+                  </span>
+                );
+              })()}
             </p>
             <p>
               <span className="text-muted-foreground">종합 점수: </span>
